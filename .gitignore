@@ -1,2 +1,3 @@
 *.pdf
+!README.pdf
 tablex.typ
