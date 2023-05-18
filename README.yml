@@ -1,0 +1,29 @@
+Cherry:
+  type: "chapter"
+  title: "Tbl -- A Program to Format Tables"
+  author:
+    - "Cherry, Lorinda L."
+    - "Lesk, Michael E."
+  page-range: "35-51"
+  url: "https://9p.io/10thEdMan/tbl.pdf"
+  parent:
+    title: "Unix Research System"
+    type: "book"
+    editor:
+      - Hume, Andrew G.
+      - McIlroy, M. Doug
+    edition: 10
+    volume: 2
+    year: 1990
+    organization: "AT&T Bell Laboratories and Lucent Technologies"
+    location: "Murray Hill, New Jersey 07974"
+    publisher: "Holt Rinehart & Winston"
+    isbn: "0-03-047529-5"
+
+tbl.1:
+  type: "web"
+  url: "https://man7.org/linux/man-pages/man1/tbl.1.html"
+
+tbl.7:
+  type: "web"
+  url: "https://man.openbsd.org/tbl.7"

@@ -1,43 +1,82 @@
 // vi: ft=typst et ts=2 sts=2 sw=2
-#import "tbl.typ"
 
+#let font = "New Computer Modern"
 #set text(
-  font: "New Computer Modern",
+  font: font,
   size: 14pt,
 )
 #show raw.where(block: false, lang: none): it => {
-  set text(
-    font: "CMU Typewriter Text",
-  )
   box(
     fill: luma(85%),
-    inset: (x: 0.1em),
-    outset: (top: 0.1em, bottom: 0.3em),
+    inset: (x: 0.1em, y: 0.2em),
+    baseline: 0.2em,
     radius: 0.2em,
     it.text,
   )
 }
-#show raw.where(block: true, lang: "tbl-example"): it => block(
+#show figure.where(kind: "example"): it => block(
   breakable: false,
-  align(center, stack(
-    dir: ltr,
 
+  {
     {
-      set text(
-        font: "CMU Typewriter Text",
-      )
-      block(
-        width: 55%,
-        fill: luma(85%),
-        inset: 0.5em,
-        align(left, "```tbl\n" + it.text + "\n```"),
-      )
-    },
-    1fr,
-    align(horizon, raw(lang: "tbl", it.text)),
-    1fr,
-  ))
+      set text(font: font)
+      if it.caption in (none, [], "") {
+        strong[#it.supplement #it.counter.display()]
+      } else [
+        #strong[#it.supplement #it.counter.display():] #it.caption
+      ]
+    }
+    box(
+      stroke: 1pt,
+      it.body
+    )
+  },
 )
+#show raw.where(block: true): it => {
+  if it.lang.starts-with("tbl-example") {
+    let dir = ltr
+    let sep = (1fr, 1fr)
+    let width = 50%
+    if it.lang.ends-with("-wide") {
+      dir = ttb
+      sep = (1em, 1em)
+      width = 100%
+    }
+    let caption = none
+    let src = it.text
+    let caption = src.match(regex(`(?m)\A\.\\"[ \t]*Caption:[ \t]*(.*?)$`.text))
+    if caption != none {
+      src = src.slice(caption.end + 1)
+      caption = eval("[" + caption.captures.first() + "]")
+    }
+
+    figure(
+      kind: "example",
+      supplement: "Example",
+      caption: caption,
+
+      align(center, stack(
+        dir: dir,
+
+        {
+          set text(size: 0.8em)
+          block(
+            width: width,
+            fill: luma(85%),
+            inset: 0.5em,
+            stroke: 1pt,
+            align(left, "```tbl\n" + src + "\n```"),
+          )
+        },
+        sep.first(),
+        align(horizon, raw(lang: "tbl", src)),
+        sep.last(),
+      ))
+    )
+  } else {
+    it
+  }
+}
 #let title = ""
 #set document(
   title: "tbl.typ: a tbl(1)-like preprocessor for Typst and tablex.typ",
@@ -73,33 +112,43 @@
   )
 }
 
-#[
-  #set align(center)
-  #v(1fr)
+#{
+  v(1fr)
 
-  #strong[
+  strong[
+    #set align(center)
     #set text(size: 2em)
     `tbl.typ`: a `tbl(1)`-like preprocessor \
     for Typst and `tablex.typ`
   ]
 
-  #set text(size: 1.2em)
-  Version TK \
-  Max Rees \
-  2023
+  [
+    #set align(center)
+    #set text(size: 1.2em)
+    Version TK \
+    Max Rees \
+    2023
+  ]
 
-  #v(1fr)
-  #pagebreak()
-]
+  v(1fr)
+  outline()
+  pagebreak()
+}
 
 = Examples
 
-#show: tbl.template.with(
+#import "tbl.typ"
+#let template = tbl.template.with(
+  font: font,
+)
+
+#show: template.with(
   box: true,
   tab: "|",
 )
 
 ```tbl-example
+.\" Caption: adapted from @tbl.7
 lz  s | rt
 lt| cb| ^
 ^ | rz  s.
@@ -109,6 +158,7 @@ l|center|
 ```
 
 ```tbl-example
+.\" Caption: adapted from @Cherry[p. 41]
 c c c
 l l ne .
 Fact|Location|Statistic
@@ -120,6 +170,7 @@ Lowest point|Death Valley, CA|-- 282 ft.
 ```
 
 ```tbl-example
+.\" Caption: adapted from @tbl.7
 r| l
 r  n.
 software|version
@@ -131,6 +182,7 @@ TeX Live|2015
 ```
 
 ```tbl-example
+.\" Caption: adapted from @Cherry[p. 43]
 cf(Courier New) s s s
 c | cs s
 c | cs s
@@ -153,6 +205,7 @@ Rye bread|9.0|.6|52.7
 ```
 
 ```tbl-example
+.\" Caption: adapted from @Cherry[p. 42]
 c s s
 c | c | c
 l | l | ne .
@@ -177,11 +230,12 @@ _
 George Washington|O . H . Ammann|3500
 ```
 
-#show: tbl.template.with(
+#show: template.with(
   tab: "|",
 )
 
 ```tbl-example
+.\" Caption: adapted from @tbl.7
 rb c  lb
 r  ci l.
 r|center|l
@@ -190,6 +244,7 @@ right|c|left
 ```
 
 ```tbl-example
+.\" Caption: adapted from @tbl.1
 Cf(BI) Cf(BI) Cf(B), C C Cu.
 n|n*#sym.times;*n|difference
 1|1
@@ -201,6 +256,7 @@ n|n*#sym.times;*n|difference
 ```
 
 ```tbl-example
+.\" Caption: adapted from @Cherry[p. 42]
 c c
 np(-2) | n | .
 |Stack
@@ -218,6 +274,7 @@ np(-2) | n | .
 ```
 
 ```tbl-example
+.\" Caption: adapted from @Cherry[p. 37]
 n.
 13
 4.2
@@ -230,12 +287,13 @@ abc\&
 749.12
 ```
 
-#show: tbl.template.with(
+#show: template.with(
   allbox: true,
   tab: "|",
 )
 
 ```tbl-example
+.\" Caption: adapted from @Cherry[p. 41]
 c s s
 c c c
 n n ne .
@@ -260,6 +318,7 @@ D|330
 ```
 
 ```tbl-example
+.\" Caption: adapted from @Cherry[p. 44]
 cf(I) s s
 c cw(1in) cw(1in)
 ltp(9) ltp(9) ltp(9).
@@ -283,13 +342,13 @@ by recent glaciation.
 T}
 ```
 
-```tbl-example
+```tbl-example-wide
+.\" Caption: adapted from @tbl.7
 le le7| lw(10).
 The fourth line|_|line 1
 of this column|=|line 2
 determines|\_|line 3
 the column width.|T{
-#set text(hyphenate: true, overhang: true)
 This text is too wide to fit into a column of width 17.
 T}|line 4
 T{
@@ -297,13 +356,14 @@ No break here.
 T}||line 5
 ```
 
-#show: tbl.template.with(
+#show: template.with(
   doublebox: true,
   tab: " : ",
   nokeep: true,
 )
 
 ```tbl-example
+.\" Caption: adapted from @Cherry[p. 45]
 cb s s s s
 cp(-2) s s s s
 c | c | c | c | c
@@ -321,3 +381,9 @@ _
 31 Pica : 3 : --3.8 : --2.4 : --3.6
 43 Pica : 5.1 : --90000.000 : --5.9 : --8.8
 ```
+
+#bibliography(
+  "README.yml",
+  title: [References],
+  style: "ieee",
+)
