@@ -197,7 +197,7 @@
 }
 
 #let template(body, ..options-given) = {
-  show raw.where(lang: "tbl"): it => {
+  show raw.where(lang: "tbl"): it => layout(size => {
     let raw-text = it.text.replace("\r", "")
 
     // A single period separates the "table data" from the "table format
@@ -274,7 +274,7 @@
     // container we're in - or the width of the page minus the margins
     // if there is no container.
     let tbl-max-width = state("tbl-max-width")
-    layout(size => tbl-max-width.update(size.width))
+    tbl-max-width.update(size.width)
 
     ////////////////// TABLE FORMAT / LAYOUT PARSING //////////////////
     // Strip out any column modifier arguments first, since they may
@@ -943,7 +943,7 @@
         })
       )
     )
-  }
+  })
 
   body
 }
