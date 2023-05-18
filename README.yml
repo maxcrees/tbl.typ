@@ -20,6 +20,12 @@ Cherry:
     publisher: "Holt Rinehart & Winston"
     isbn: "0-03-047529-5"
 
+tablex.typ:
+  type: "web"
+  title: "typst-tablex"
+  author: "Pg Biel"
+  url: "https://github.com/PgBiel/typst-tablex"
+
 tbl.1:
   type: "web"
   url: "https://man7.org/linux/man-pages/man1/tbl.1.html"
@@ -27,3 +33,7 @@ tbl.1:
 tbl.7:
   type: "web"
   url: "https://man.openbsd.org/tbl.7"
+
+Typst:
+  type: "web"
+  url: "https://typst.app/"

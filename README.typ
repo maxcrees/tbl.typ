@@ -1,19 +1,71 @@
-// vi: ft=typst et ts=2 sts=2 sw=2
+// vi: ft=typst et ts=2 sts=2 sw=2 tw=72
+
+#set document(
+  title: "tbl.typ: a tbl-like preprocessor for Typst and tablex",
+  author: "Max Rees",
+)
+
+#set page(
+  paper: "us-letter",
+  margin: (top: 1in, rest: 0.5in),
+  header-ascent: 0.5in,
+  header: locate(loc => {
+    let page-num = counter(page).at(loc).first()
+
+    if page-num > 1 {
+      stack(
+        dir: ltr,
+        text(size: 1.2em, `tbl.typ`),
+        1fr,
+        [#page-num],
+      )
+    }
+  })
+)
 
 #let font = "New Computer Modern"
 #set text(
   font: font,
   size: 14pt,
 )
-#show raw.where(block: false, lang: none): it => {
+
+#show link: set text(fill: blue)
+
+#show raw.where(block: false): it => {
   box(
     fill: luma(85%),
-    inset: (x: 0.1em, y: 0.2em),
-    baseline: 0.2em,
-    radius: 0.2em,
+    inset: (x: 0.1em),
+    outset: (y: 0.3em),
+    radius: 0.3em,
     it.text,
   )
 }
+
+#show heading: it => {
+  set text(size: calc.max(1.4em - 0.1em * (it.level - 1), 1em))
+
+  block(
+    breakable: false,
+    inset: (bottom: 10pt),
+    stroke:
+      if it.level == 1 { (bottom: 1pt) }
+      else { none },
+    width: 100%,
+    it.body,
+  )
+}
+
+#let prose = it => {
+  set par(leading: 0.5em, justify: true)
+  set text(hyphenate: true, overhang: true)
+  it
+}
+
+#let TK = strong(text(fill: red)[TK])
+#let option(name) = {
+  link(label("options." + name), raw(block: false, name))
+}
+
 #show figure.where(kind: "example"): it => block(
   breakable: false,
 
@@ -32,8 +84,17 @@
     )
   },
 )
+
 #show raw.where(block: true): it => {
-  if it.lang.starts-with("tbl-example") {
+  if it.lang == none or not it.lang.starts-with("tbl") {
+    block(
+      width: 100%,
+      fill: luma(85%),
+      inset: 0.5em,
+      stroke: 1pt,
+      it.text,
+    )
+  } else if it.lang.starts-with("tbl-example") {
     let dir = ltr
     let sep = (1fr, 1fr)
     let width = 50%
@@ -77,40 +138,6 @@
     it
   }
 }
-#let title = ""
-#set document(
-  title: "tbl.typ: a tbl(1)-like preprocessor for Typst and tablex.typ",
-  author: "Max Rees",
-)
-#set page(
-  paper: "us-letter",
-  margin: 0.5in,
-  header: locate(loc => {
-    let page-num = counter(page).at(loc).first()
-
-    if page-num > 1 {
-      stack(
-        dir: ltr,
-        text(size: 1.2em, `tbl.typ`),
-        1fr,
-        [#page-num],
-      )
-    }
-  })
-)
-#show heading: it => {
-  set text(size: calc.max(1.4em - 0.1em * (it.level - 1), 1em))
-
-  block(
-    breakable: false,
-    inset: (bottom: 5pt),
-    stroke:
-      if it.level == 1 { (bottom: 1pt) }
-      else { none },
-    width: 100%,
-    it.body,
-  )
-}
 
 #{
   v(1fr)
@@ -118,14 +145,14 @@
   strong[
     #set align(center)
     #set text(size: 2em)
-    `tbl.typ`: a `tbl(1)`-like preprocessor \
-    for Typst and `tablex.typ`
+    `tbl.typ`: a `tbl`-like preprocessor \
+    for Typst and `tablex`
   ]
 
   [
     #set align(center)
     #set text(size: 1.2em)
-    Version TK \
+    Version #TK \
     Max Rees \
     2023
   ]
@@ -134,6 +161,138 @@
   outline()
   pagebreak()
 }
+
+= Introduction <intro>
+#prose[
+  Typst @Typst is "a new markup-based typesetting system that is
+  powerful and easy to learn." While Typst provides a built-in `table()`
+  function, it does not currently support more advanced features such as
+  row spans and column spans, fine-grain control of borders, or complex
+  cell alignments. Pg Biel's `tablex` project @tablex.typ provides many
+  of these features. However, it remains the case that writing a table
+  using either `table()` or `tablex()` can require rather verbose
+  syntax.
+
+  The `tbl.typ` project is an effort to allow the expression of rich
+  tables in Typst using a more terse syntax. This syntax comes from a
+  #smallcaps[unix] heritage: the `tbl` preprocessor which designed for
+  use with the traditional #smallcaps[troff] typesetting system @tbl.1
+  @tbl.7 @Cherry.  Important differences between the syntax of
+  traditional `tbl` and `tbl.typ` are noted in Section #TK.
+
+  After importing the library using `#import "tbl.typ"`, the basic
+  format of a table when using `tbl.typ` is the following:
+
+````
+```tbl
+Format specifications .
+Data
+```
+````
+
+  The two main components of this syntax are:
+
+  - #link(<specs>)[_Format specifications_]. This describes the layout
+    of the table in terms of the number and style of columns for each
+    row.
+
+    The last line of the format specifications must end in a period
+    (`.`). This is the separator between the two sections.
+
+  - #link(<data>)[_Data_]. This is the content that will fill each cell
+    of the table.  Generally every line of input in this section
+    corresponds to a row in the table, though there are exceptions noted
+    later. Cells are separated by the #option("tab") option which
+    defaults to a #smallcaps[tab] character.
+]
+
+#pagebreak()
+
+= Region options <options>
+#let options = (
+  (`auto-lines`, (`allbox`,), `false`, [Like #option("box"), but also
+   draw a line between every cell if `true`. This is the same option from
+   `tablex`.]),
+  (`box`, (`frame`,), `false`, [If `true`, draw a line around the entire
+   table.]),
+  (`breakable`, (`nokeep`,), `false`, [If `true`, the table can span
+   multiple pages if necessary.]),
+  (`decimalpoint`, (), `"."`, [The string used to separate the integral
+   part of a number from the fractional part.]),
+  (`doublebox`, (`doubleframe`,), `false`, [Like #option("box"), but
+   also draw a second line around the entire table if `true`.]),
+  (`font`, (), `"Times"`, [The font for the table. Can be overridden
+   later by the format specifications.]),
+  (`header-rows`, (), `1`, [The number of rows at the beginning of the
+   table to consider part of the "header" for the purposes of
+   #option("repeat-header"). This option is also controlled by `.TH`
+   rows in the table data.]),
+  // leading
+  (`macros`, (), `(:)`, [A dictionary of (name, function) pairs that can
+   be used with column modifier `m`.]),
+  // pad
+  (`repeat-header`, (), `false`, [If #option("breakable") is `true` and
+   this option is `true`, then the table header controlled by
+   #option("header-rows") will be re-displayed on each subsequent page.
+   This option is also controlled by `.TH` rows in the table data.]),
+  (`stroke`, (`linesize`,), `1pt`, [How to draw all lines in the
+   table.]),
+  (`tab`, (), [`"\t"` (a #smallcaps[tab] character)], [The string
+   delimiter that separates different cells within a given row of the
+   table data.]),
+  (`tbl-align`, (), `left`, [How to align the table as a whole.]),
+)
+#prose[
+
+  In addition to the overall #link(<intro>)[table syntax] itself, you
+  may specify _region options_ that control the parsing and styling of
+  the table as a whole using a "show-everything" rule prior to the
+  tables you would like to control. For example:
+
+```
+#show: tbl.template.with(
+  allbox: true,
+  tab: "|",
+)
+```
+
+  The following options are recognized:
+
+  #style(styles => {
+    set par(justify: false)
+    set text(hyphenate: false)
+    let width = calc.max(..options.map(o => measure(o.first(), styles).width))
+    let first = true
+    for (name, aliases, default, desc) in options {
+      aliases = aliases.join([, ])
+      if aliases != none { aliases = [_Aliases:_ #aliases \ ] }
+      block(
+        breakable: false,
+        width: 100%,
+        inset: (top: 0em, bottom: 0.5em),
+        below: 0.5em,
+        stroke: (bottom: 0.5pt + gray),
+
+        terms(
+          indent: 1em,
+          hanging-indent: width + 1em,
+          separator: h(1em),
+          tight: true,
+          spacing: 0em,
+
+          (
+            box(width: width, [#name #label("options." + name.text)]),
+            [#desc \ \ #aliases _Default:_ #default]
+          ),
+        )
+      )
+    }
+  })
+]
+
+= Format specifications <specs>
+
+= Data <data>
 
 = Examples
 
