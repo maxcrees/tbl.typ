@@ -62,9 +62,8 @@
 }
 
 #let TK = strong(text(fill: red)[TK])
-#let option(name) = {
-  link(label("options." + name), raw(block: false, name))
-}
+#let option(name) = link(label("options." + name), raw(block: false, name))
+#let class(name) = link(label("classes." + name), raw(block: false, name))
 
 #show figure.where(kind: "example"): it => block(
   breakable: false,
@@ -259,8 +258,6 @@ Data
   The following options are recognized:
 
   #style(styles => {
-    set par(justify: false)
-    set text(hyphenate: false)
     let width = calc.max(..options.map(o => measure(o.first(), styles).width))
     let first = true
     for (name, aliases, default, desc) in options {
@@ -273,24 +270,79 @@ Data
         below: 0.5em,
         stroke: (bottom: 0.5pt + gray),
 
-        terms(
-          indent: 1em,
-          hanging-indent: width + 1em,
-          separator: h(1em),
-          tight: true,
-          spacing: 0em,
-
-          (
-            box(width: width, [#name #label("options." + name.text)]),
-            [#desc \ \ #aliases _Default:_ #default]
-          ),
-        )
+        stack(
+          dir: ltr,
+          1em,
+          box(width: width, [#strong(name) #label("options." + name.text)]),
+          1em,
+          box(width: 100% - width - 0.5in)[#desc \ \ #aliases _Default:_ #default]
+        ),
       )
     }
   })
 ]
 
 = Format specifications <specs>
+#let classes = (
+  (`L`, [], [Left align.]),
+  (`R`, [], [Right align.]),
+  (`C`, [], [Center align.]),
+  (`N`, [], [Numerically align.]),
+  (`S`, [], [This cell is column-spanned by the previous cell to the left in
+   the current row. \ \ _The corresponding table data entries should be
+   empty._]),
+  (`^`, [(caret)], [This cell is row-spanned by the corresponding cell
+   in the previous row above. \ \ _The corresponding table data entries
+   should be empty._]),
+  (`_`, [(underscore)], [This cell contains a vertically-centered
+   horizontal rule. \ \ _The corresponding table data entries should be
+   empty._ \ _Aliases:_ `-`]),
+  (`=`, [(equals sign)], [Same as #class("_"), but draw a double
+   horizontal rule instead. \ \ _The corresponding table data entries
+   should be empty._]),
+  (`|`, [(vertical bar)], [This classifier does not actually begin a new
+   column, but rather indicates the location of a vertical line. \ \ If
+   placed at the beginning of a row definition, the line is drawn to the
+   left of the first cell in that row. Otherwise, it is drawn to the
+   right of the current cell in that row.]),
+)
+#prose[
+  The format specifications section controls the layout and style of
+  cells within rows and columns of the table.
+
+  Each comma or new line of format specification begins a new _row
+  definition_. Within each row definition, encountering a _column
+  classifier_ character denotes a new column in the table. The
+  classifier may be followed by any number of _column modifiers_, some
+  of which may have required arguments enclosed in parentheses.
+
+  #pagebreak()
+
+  The following column classifiers are recognized. They may be given as
+  either capital or lowercase.
+
+  #style(styles => {
+    let width = calc.max(..classes.map(o => measure([#o.at(0) #o.at(1)], styles).width))
+    let first = true
+    for (class, sym-desc, desc) in classes {
+      block(
+        breakable: false,
+        width: 100%,
+        inset: (top: 0em, bottom: 0.5em),
+        below: 0.5em,
+        stroke: (bottom: 0.5pt + gray),
+
+        stack(
+          dir: ltr,
+          1em,
+          box(width: width)[#strong(class) #sym-desc #label("classes." + class.text)],
+          1em,
+          box(width: 100% - width - 0.5in, desc),
+        ),
+      )
+    }
+  })
+]
 
 = Data <data>
 
