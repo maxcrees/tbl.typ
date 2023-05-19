@@ -29,8 +29,8 @@
   leading: 0.65em,
   macros: (:),
   pad: (
-    left: 5pt,
-    right: 5pt,
+    left: 0.75em,
+    right: 0.75em,
     top: 3pt,
     bottom: 3pt,
   ),
@@ -340,6 +340,7 @@
       let new-vlines = ()
       let new-rowdef = ()
 
+      let column-sep-given = none
       for (j, col) in row.enumerate() {
         let (class, modstring) = col.captures
 
@@ -390,6 +391,11 @@
           cols.push(auto)
         }
 
+        if column-sep-given != none {
+          spec.pad.left = column-sep-given
+          column-sep-given = none
+        }
+
         spec.halign = {
           if spec.class in ("C", "N") {
             center
@@ -427,7 +433,9 @@
             // The following assertion should never fire, unless there
             // is a bug.
             assert(seps.len() > 0)
-            spec.pad.right = coerce-unit(seps.remove(0), "en")
+
+            spec.pad.right = coerce-unit(seps.remove(0), "en") / 2
+            column-sep-given = spec.pad.right
           }
 
           else if mod == "b" {
