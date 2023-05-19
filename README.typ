@@ -350,18 +350,20 @@ The format specifications section controls the layout and style of cells
 within rows and columns of the table.
 
 Each comma or new line of format specification begins a new _row
-definition_. Within each row definition, encountering a _column
-classifier_ character denotes a new column in the table. The classifier
-may be followed by any number of _column modifiers_, some of which may
-have required arguments enclosed in parentheses.
+definition_. Within each row definition, encountering a
+#link(<classes>)[_column classifier_ character] denotes a new column in
+the table. The classifier may be followed by any number of
+#link(<mods>)[_column modifiers_], some of which may have required
+arguments enclosed in parentheses.
 
+== Column classifiers <classes>
 The following column classifiers are recognized. They may be given as
 either capital or lowercase.
 
-/ *`L`*: Left align.
-/ *`R`*: Right align.
-/ *`C`*: Center align.
-/ *`N`*: Numerically align.
+/ *`L`*: #strong[L]eft align.
+/ *`R`*: #strong[R]ight align.
+/ *`C`*: #strong[C]enter align.
+/ *`N`*: #strong[N]umerically align.
 / *`S`*: This cell is column-spanned by the previous cell to the left in
   the current row.
 
@@ -389,6 +391,8 @@ either capital or lowercase.
   the left of the first cell in that row. Otherwise, it is drawn to the
   right of the current cell in that row.
 
+#pagebreak(weak: true)
+== Column modifiers <mods>
 = Data <data>
 
 = Differences from traditional `tbl` <diff>
