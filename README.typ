@@ -22,9 +22,8 @@
 
     if my-page-num > 1 {
       grid(
-        columns: (1fr, 1fr, 1fr),
+        columns: (1fr, 1fr),
         text(size: 1.2em, `tbl.typ`),
-        my-heading,
         align(right)[#my-page-num],
       )
       my-line
@@ -54,9 +53,7 @@
   set text(size: calc.max(1.4em - 0.1em * (it.level - 1), 1em))
 
   if it.level == 1 {
-    current-heading.update(none)
     pagebreak(weak: true)
-    current-heading.update(it.body)
   }
   block(
     breakable: false,
