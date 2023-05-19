@@ -537,6 +537,9 @@ either capital or lowercase.
 - Within text blocks, `.\"` comments are not removed, and other #troff
   commands are not rejected. (#issue(6))
 
+- A table data row consisting of only `=` (double horizontal line) is
+  not currently supported.
+
 = Examples
 
 #let template = tbl.template.with(
