@@ -54,14 +54,16 @@
 }
 
 #show heading: it => {
-  set text(size: calc.max(1.4em - 0.1em * (it.level - 1), 1em))
+  set text(size: calc.max(1.4em - 0.2em * (it.level - 1), 1em))
 
   if it.level == 1 {
     pagebreak(weak: true)
   }
   block(
     breakable: false,
-    inset: (bottom: 10pt),
+    inset:
+      if it.level == 1 { (bottom: 10pt) }
+      else { (:) },
     stroke:
       if it.level == 1 { (bottom: 1pt) }
       else { none },
@@ -393,7 +395,6 @@ either capital or lowercase.
 
 = Examples
 
-#import "tbl.typ"
 #let template = tbl.template.with(
   font: font,
 )
