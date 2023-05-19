@@ -584,6 +584,11 @@ either capital or lowercase.
 
   - `||` (double vertical line)
 
+- You may need to apply the #link-label(`e`) column modifier to one or
+  more of the rightmost columns in order to minimize their width. This
+  appears to be a more fundamental issue with Typst or `tablex` at the
+  moment.
+
 - The #link-label(`w(...)`) (minimum #strong[w]idth) column modifier
   currently only sets the width of text blocks; it does not yet affect
   other table cells.
