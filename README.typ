@@ -515,12 +515,16 @@ either capital or lowercase.
   - `nospaces`
   - `nowarn`
 
-- The `A` (#strong[a]lphabetic) #link(<classes>)[column classifier] is
-  not currently supported.
-
 - The #link-label(`pad`) region option currently requires the `left` and
   `right` keys to be explicitly provided. Unexpected behavior may occur
   if `x` is provided as a key. (#issue(3))
+
+- The following #link(<classes>)[column classifiers] are not currently
+  supported:
+
+  - `A` (#strong[a]lphabetic)
+
+  - `||` (double vertical line)
 
 - The #link-label(`w(...)`) (minimum #strong[w]idth) column modifier
   currently only sets the width of text blocks; it does not yet affect
