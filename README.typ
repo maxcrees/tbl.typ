@@ -104,6 +104,10 @@
 })
 
 #let TK = strong(text(fill: red)[TK])
+#let issue(num) = link(
+  "https://github.com/sroracle/tbl.typ/issues/" + str(num),
+  [GH\##num],
+)
 #let link-label(target, ..text) = {
   text = text.pos()
   if text.len() == 0 {
@@ -478,6 +482,30 @@ either capital or lowercase.
 = Data <data>
 
 = Differences from traditional `tbl` <diff>
+
+= Known issues <issues>
+
+- The following #link(<options>)[region options] are not currently
+  supported:
+
+  - `delim` (#issue(1))
+  - `expand` (#issue(2))
+  - `nospaces`
+  - `nowarn`
+
+- The `A` (#strong[a]lphabetic) #link(<classes>)[column classifier] is
+  not currently supported.
+
+- The #link-label(`w(...)`) (minimum #strong[w]idth) column modifier
+  currently only sets the width of text blocks; it does not yet affect
+  other table cells.
+  (#issue(5))
+
+- `.T&` in the #link(<data>)[table data] is not currently supported.
+  (#issue(4))
+
+- Within text blocks, `.\"` comments are not removed, and
+  other #smallcaps[troff] commands are not rejected. (#issue(6))
 
 = Examples
 
