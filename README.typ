@@ -91,6 +91,11 @@
             let the-label = none
             if it.body.func() == raw {
               the-label = label(it.body.text)
+            } else if it.body.func() == text {
+              the-label = repr(it.body)
+              the-label = the-label.trim("[", at: start, repeat: false)
+              the-label = the-label.trim("]", at: end, repeat: false)
+              the-label = label(the-label)
             }
             [#it#the-label]
           }
@@ -329,7 +334,11 @@ The following options are recognized:
 
   _Default:_ `(:)`
 
-// pad
+/ *`pad`*: This is the padding used for each cell, for use with the
+  Typst `pad` element function. The `left` and `right` keys can be
+  overridden using a #link-label("Number")[numeric column modifier].
+
+  _Default:_ `(left: 0.75em, right: 0.75em, top: 3pt, bottom: 3pt)`
 
 / *`repeat-header`*: If #link-label(`breakable`) is `true` and this
   option is `true`, then the table header controlled by
@@ -480,6 +489,18 @@ either capital or lowercase.
 / *`z`*: The corresponding cell is treated as if it has #strong[z]ero
   width for the purpose of determining the width of its column.
 
+/ *Number*: A number given as a column modifier is interpreted as a
+  #link-label(`p(...)`)[`en` length] which is used as a _column
+  separation_. This is the distance that separates the end of the
+  current cell's content from the beginning of the next cell's content.
+  If there is a vertical line between the two cells, then it will appear
+  centered on this separation distance.
+
+  The default column separation is controlled by the sum of the `left`
+  and `right` keys of the #link-label(`pad`) option. When not specified,
+  this defaults to `0.75em + 0.75em`, which traditional #troff calls
+  `3n`.
+
 = Data <data>
 
 = Differences from traditional `tbl` <diff>
@@ -496,6 +517,10 @@ either capital or lowercase.
 
 - The `A` (#strong[a]lphabetic) #link(<classes>)[column classifier] is
   not currently supported.
+
+- The #link-label(`pad`) region option currently requires the `left` and
+  `right` keys to be explicitly provided. Unexpected behavior may occur
+  if `x` is provided as a key. (#issue(3))
 
 - The #link-label(`w(...)`) (minimum #strong[w]idth) column modifier
   currently only sets the width of text blocks; it does not yet affect
