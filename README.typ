@@ -5,20 +5,29 @@
   author: "Max Rees",
 )
 
+#let current-heading = state("current-heading", none)
 #set page(
   paper: "us-letter",
-  margin: (top: 1in, rest: 0.5in),
-  header-ascent: 0.5in,
+  margin: (top: 0.75in, rest: 0.5in),
   header: locate(loc => {
-    let page-num = counter(page).at(loc).first()
+    let my-page-num = counter(page).at(loc).first()
+    let my-heading = current-heading.at(loc)
+    let my-line = none
+    if my-heading == none {
+      my-heading = []
+    } else {
+      my-heading = align(center, my-heading)
+      my-line = place(bottom, dy: 8pt, line(length: 100%))
+    }
 
-    if page-num > 1 {
-      stack(
-        dir: ltr,
+    if my-page-num > 1 {
+      grid(
+        columns: (1fr, 1fr, 1fr),
         text(size: 1.2em, `tbl.typ`),
-        1fr,
-        [#page-num],
+        my-heading,
+        align(right)[#my-page-num],
       )
+      my-line
     }
   })
 )
@@ -44,6 +53,11 @@
 #show heading: it => {
   set text(size: calc.max(1.4em - 0.1em * (it.level - 1), 1em))
 
+  if it.level == 1 {
+    current-heading.update(none)
+    pagebreak(weak: true)
+    current-heading.update(it.body)
+  }
   block(
     breakable: false,
     inset: (bottom: 10pt),
@@ -204,7 +218,6 @@
 
   v(1fr)
   outline()
-  pagebreak()
 }
 
 = Introduction <intro>
