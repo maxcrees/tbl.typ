@@ -211,7 +211,7 @@
   [
     #set align(center)
     #set text(size: 1.2em)
-    Version #TK \
+    Version 0.0.1 \
     Max Rees \
     2023
   ]
@@ -255,9 +255,9 @@ The two main components of this syntax are:
   This is the separator between the two sections.
 
 - #link(<data>)[_Data_]. This is the content that will fill each cell of
-  the table. Generally every line of input in this section corresponds
-  to a row in the table, though there are exceptions noted later. Cells
-  are separated by the #link-label(`tab`) option which defaults to a
+  the table. Generally every input line in this section corresponds to a
+  row in the table, though there are exceptions noted later. Cells are
+  separated by the #link-label(`tab`) option which defaults to a
   #smallcaps[tab] character.
 
 = Region options <options>
@@ -385,8 +385,9 @@ either capital or lowercase.
   respect to an _alignment point_, which is determined according to the
   following rules:
 
-  - One position after the leftmost occurrence of the _non-printing
-    token_ `\&`, if any is present.
+  - One position after the leftmost occurrence of the
+    #link-label(`\&`)[_non-printing input token_ `\&`], if any is
+    present.
 
   - Otherwise, the rightmost occurrence of the
     #link-label(`decimalpoint`) string that immediately precedes a
@@ -546,6 +547,124 @@ either capital or lowercase.
   #emph[cf. @ex-lines, @ex-read[].]
 
 = Data <data>
+Each input line following the terminating `.` of the
+#link(<specs>)[format specifications] creates a new row of data in the
+table, with each cell separated by the #link-label(`tab`) string.
+
+== Special input lines
+Some input lines do not represent table rows at all:
+
+- A line consisting of only `_` (underscore) draws a horizontal line at
+  that position in the table. This is only useful if
+  #link-label(`auto-lines`) is `false`.
+
+  #emph[cf. @ex-software, @ex-food[], @ex-bridges[], @ex-read[].]
+
+  Similarly, `=` (equals sign) in #troff would draw a double horizontal
+  line, but this is not currently supported.
+
+- A line consisting of only `.TH` (period + capital T + capital H) is an
+  _end-of-header_ marker. All rows of data that precede it are
+  considered part of the table's header for the purposes of the
+  #link-label(`header-rows`) option. It also sets
+  #link-label(`repeat-header`) to `true`. This is only useful if
+  #link-label(`breakable`) is also `true` and the table spans multiple
+  pages.
+
+- A line consisting of only `.T&` (period + capital T + ampersand) in
+  #troff marks the beginning of a new set of format specifications to be
+  terminated by `.` and more table data to follow, but this is not
+  currently supported.
+
+- Lines that begin with `.\"` (period + backslash + double quote) are
+  treated as comments and completely ignored.
+
+- Other lines that begin with `.` (period) in #troff were used as
+  _commands_ (_requests_ or _macro invocations_), but this cannot be
+  supported for obvious reasons. Any such line is rejected. To have the
+  first cell in a row begin with a period, use a Typst escape like `\.`
+  or put a #smallcaps[space] in front of it.
+
+#pagebreak(weak: true)
+== Table entries
+The string representing the cell content is called the _table entry_.
+For the most part, this is simply passed to the Typst `eval` function,
+so you can use Typst markup within a table entry. There are a few
+important caveats:
+
+- The `eval` function does not have access to anything other than the
+  Typst standard library. This means it is not currently possible to
+  reference variables or functions within a table entry.
+
+- #link-label(`N`)[Numerically-aligned cells] are split on the alignment
+  point and then evaluated as two separate pieces of content. This may
+  cause unexpected syntax errors if you have Typst markup that spans the
+  alignment point.
+
+- The `tab` string cannot be used *within* a table entry, except by
+  using Typst hexadecimal escape sequences (provided that `tab` is not
+  any of `\`, `u`, `{`, `}`, a letter, or a digit).
+
+- Any occurrences of the string `\&` #label(`\&`.text)
+  (backslash-ampersand; known as the _non-printing input token_) in the
+  table entry are removed.
+
+== Special table entries
+If certain characters are alone in a table entry, they gain a special
+meaning:
+
+  - *`_`* (a single underscore): Draw a horizontal line through the
+    middle of this otherwise empty cell. The line touches any adjacent
+    vertical lines that are present.
+
+    #emph[cf. @ex-bridges, @ex-stack[], @ex-lines[].]
+
+  - *`\_`* (backslash + underscore): Like `_` above, but the line does
+    *not* touch any adjacent vertical lines, subject to the current
+    #link-label("Number")[column separation].
+
+    #emph[cf. @ex-lines.]
+
+  - *`=`* (equals sign): Like `_` above, but draw a double horizontal
+    line.
+
+    #emph[cf. @ex-lines.]
+
+  - *`\=`* (backslash + equals sign): Like `=` above, but subject to
+    column separation like `\_` above.
+
+  - *`\^`* (backslash + caret): This cell is row-spanned by the
+    corresponding cell in the previous row above. This is similar to the
+    #link-label(`^`) column classifier, but can be used at an arbitrary
+    point in the table.
+
+    #emph[cf. @ex-food.]
+
+#pagebreak(weak: true)
+== Text blocks
+A table entry can also span multiple input lines by writing it as a
+_text block._ #label("text block") This consists of beginning the entry
+with `T{` (capital T \+ open brace), followed immediately by the end of
+that input line.  All following input lines are collected as part of the
+text block until a input line that begins with `T}` (capital T \+ close
+brace) is encountered. The rest of that input line can provide the
+remaining entries for that row of the table.
+
+// modifiers on spanned columns??
+If the cell is subject to the #link-label(`w(...)`) column modifier,
+then the text block is constrained to the specified width.
+
+Otherwise, a constraining width $W$ is calculated according to the
+following formula:
+
+$ W = L times C / (N - 1) $
+
+where $L$ is the maximum width of the table based on the container it is
+in, or the width of the page minus the margins if there is no container;
+$C$ is the number of columns this text block spans horizontally; and $N$
+is the total number of columns in the table.
+
+#emph[cf. @ex-rocks, @ex-lines[].]
 
 = Differences from traditional `tbl` <diff>
 
@@ -612,6 +731,9 @@ either capital or lowercase.
   currently only sets the width of text blocks; it does not yet affect
   other table cells.
   (#issue(5))
+
+- The #link-label(`x`) (e#strong[x]pand) column modifier does not
+  currently constrain the width of text blocks like it should.
 
 - `.T&` in the #link(<data>)[table data] is not currently supported.
   (#issue(4))
