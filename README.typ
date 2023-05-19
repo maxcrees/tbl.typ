@@ -316,7 +316,8 @@ The following options are recognized:
 
   _Default:_ `1`
 
-// leading
+/ *`leading`*: The vertical spacing / leading to apply to table cells.
+  Can be overridden later by the #link-label(`v(...)`) column modifier.
 
 / *`macros`*: A dictionary of (name, function) pairs that can be used
   with column modifier #link-label(`m(...)`).
