@@ -222,7 +222,7 @@
   tables in Typst using a more terse syntax. This syntax comes from a
   #smallcaps[unix] heritage: the `tbl` preprocessor which designed for
   use with the traditional #smallcaps[troff] typesetting system @tbl.1
-  @tbl.7 @Cherry.  Important differences between the syntax of
+  @tbl.7 @Cherry. Important differences between the syntax of
   traditional `tbl` and `tbl.typ` are noted in Section #TK.
 
   After importing the library using `#import "tbl.typ"`, the basic
