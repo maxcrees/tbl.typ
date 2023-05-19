@@ -506,6 +506,37 @@ either capital or lowercase.
 
 = Differences from traditional `tbl` <diff>
 
+- #link(<options>)[Region options] must be specified using a
+  "show-everything" rule; they cannot be provided within the `raw` block
+  itself.
+
+- The #link-label(`tab`) option may be a multi-character string.
+
+- The #link-label(`stroke`)[`linesize`] option is expected to be a Typst
+  color, length, or stroke; a dimensionless number does not work.
+
+- All #link(<mods>)[column modifiers] that expect an argument must
+  provide that argument in parentheses.
+
+- The alignment point of #link-label(`N`)[numerically-centered cells]
+  that are in the same column as #link-label(`L`)[left-centered] or
+  #link-label(`R`)[right-centered] cells is always centered with respect
+  to the column as a whole (as if the classifier was #link-label(`C`)),
+  rather than with respect to the widest #link-label(`L`) or
+  #link-label(`R`) entry.
+
+- Nothing special needs to be done to use equations within tables,
+  though #link-label(`N`)[numerically-aligned columns] may behave
+  unexpectedly until the `delim` option is implemented.
+
+- An empty entry in the table data must be given even if the cell is
+  spanned or contains a horizontal line.
+
+- `\Rx` table entries are not handled. Use the Typst `repeat` element
+  function instead, though this does not work well at the moment without
+  a fully-functioning #link-label(`w(...)`) column modifier (see
+  #link(<issues>)[Known issues]).
+
 = Known issues <issues>
 
 - The following #link(<options>)[region options] are not currently
@@ -713,13 +744,13 @@ Year|Price|Dividend
 ```
 
 ```tbl-example
-cb cb
-c  c.
+cbo(luma(85%))
+co(luma(95%))  c.
 Grade|Points
-A|510
-B|450
-C|390
-D|330
+A|$ >= 510$
+B|$ >= 450$
+C|$ >= 390$
+D|$ >= 330$
 ```
 
 ```tbl-example
