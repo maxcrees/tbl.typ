@@ -1,4 +1,5 @@
 // vi: ft=typst et ts=2 sts=2 sw=2 tw=72
+#import "tbl.typ"
 
 #set document(
   title: "tbl.typ: a tbl-like preprocessor for Typst and tablex",
