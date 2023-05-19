@@ -305,7 +305,7 @@ The following options are recognized:
   _Default:_ `false`
 
 / *`font`*: The font for the table. Can be overridden later by the
-  #TK/*f*/ column modifier.
+  #link-label(`f(...)`) column modifier.
 
   _Default:_ `"Times"`
 
@@ -319,7 +319,7 @@ The following options are recognized:
 // leading
 
 / *`macros`*: A dictionary of (name, function) pairs that can be used
-  with column modifier #TK/*m*/.
+  with column modifier #link-label(`m(...)`).
 
   _Default:_ `(:)`
 
@@ -393,6 +393,87 @@ either capital or lowercase.
 
 #pagebreak(weak: true)
 == Column modifiers <mods>
+The following column modifiers are recognized. They may be given as
+either capital or lowercase.
+
+/ *`b`*: #strong[B]old text using the Typst `strong` element function.
+
+/ *`d`*: #strong[D]own --- set the vertical alignment to `bottom`.
+
+/ *`e`*: #strong[E]qualize the width of all columns with this modifier
+  to the maximum width among those columns.
+
+  This overrides modifier #link-label(`x`).
+
+/ *`f(...)`*: #strong[F]ont name to use is given in parentheses.
+
+  `f(B)` is an alias for the #link-label(`b`) modifier. \
+  `f(I)` is an alias for the #link-label(`i`) modifier. \
+  `f(BI)` is an alias for providing both of the above modifiers.
+
+/ *`i`*: #strong[I]talicize text using the Typst `emph` element
+  function.
+
+/ *`m(...)`*: #strong[M]acro (function) to apply to each corresponding
+  cell. The macros must be scoped using the #link-label(`macros`) region
+  option.
+
+  The macro currently only receives a single argument: the content of
+  the cell. A future version may also pass the position of the cell in
+  terms of row number and column number.
+
+/ *`o(...)`*: Fill c#strong[o]lor for the cell is given in parentheses.
+
+/ *`p(...)`*: #strong[P]oint size of the font is modified according to
+  the argument in parentheses.
+
+  If the argument begins with a `+` or `-`, then the argument is added
+  or subtracted respectively with respect to the current size.
+
+  The argument may be suffixed by a unit. If no unit is specified, `pt`
+  is assumed. Valid units are:
+
+  - `pt`, `p`: points.
+  - `mm`: millimeters.
+  - `cm`, `c`: centimeters.
+  - `in`, `i`: inches.
+  - `em`, `m`: `1em` corresponds to the current font size.
+  - `en`, `n`: one _en_ equals half of an em.
+  - `P`: six _picas_ equals one inch.
+  - `M`: 100 of these equals one em.
+
+/ *`t`*: #strong[T]op --- set the vertical alignment to `top`.
+
+/ *`u`*: "Stagger" the affected cells so that they appear *between* the
+  current row and the previous one above.
+
+/ *`v(...)`*: #strong[V]ertical spacing (leading) is modified according
+  to the argument in parentheses.
+
+  The length argument provided is in the same format as
+  #link-label(`p(...)`), with a default unit of `pt` and `+` / `-`
+  relative adjustments supported.
+
+/ *`w(...)`*: #strong[W]idth of the column is guaranteed to be at least
+  as big as the argument in parentheses, which acts as a _minimum
+  width_.
+
+  The length argument provided supports the same units as
+  #link-label(`p(...)`), with a default unit of `en`. However, relative
+  adjustments are *not* supported.
+
+  This overrides modifier #link-label(`x`).
+
+/ *`x`*: E#strong[x]pand the width of the column to `1fr`, which will
+  consume all of the remaining horizontal space on the page or in the
+  current container. Applying this modifier to multiple columns will
+  divide that remaining space evenly between them.
+
+  This overrides modifiers #link-label(`e`) and #link-label(`w(...)`).
+
+/ *`z`*: The corresponding cell is treated as if it has #strong[z]ero
+  width for the purpose of determining the width of its column.
+
 = Data <data>
 
 = Differences from traditional `tbl` <diff>
