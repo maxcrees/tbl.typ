@@ -61,9 +61,55 @@
   it
 }
 
+#show terms: it => style(styles => {
+  let width = calc.max(..it.children.map(t => measure(t.term, styles).width))
+
+  for item in it.children {
+    block(
+      breakable: false,
+      width: 100%,
+      inset: (top: 0em, bottom: 0.5em),
+      below: 0.5em,
+      stroke: (bottom: 0.5pt + gray),
+
+      stack(
+        dir: ltr,
+        1em,
+        box(width: width, {
+          show strong: it => {
+            let the-label = none
+            if it.body.func() == raw {
+              the-label = label(it.body.text)
+            }
+            [#it#the-label]
+          }
+          item.term
+        }),
+        1em,
+        box(width: 100% - width - 2em, item.description),
+      ),
+    )
+  }
+})
+
 #let TK = strong(text(fill: red)[TK])
-#let option(name) = link(label("options." + name), raw(block: false, name))
-#let class(name) = link(label("classes." + name), raw(block: false, name))
+#let link-label(target, ..text) = {
+  text = text.pos()
+  if text.len() == 0 {
+    text = none
+  } else if text.len() == 1 {
+    text = text.first()
+  } else {
+    panic("Too many texts")
+  }
+  if type(target) == "content" and target.func() == raw {
+    if text == none {
+      text = target
+    }
+    target = target.text
+  }
+  link(label(target), text)
+}
 
 #show figure.where(kind: "example"): it => block(
   breakable: false,
@@ -199,48 +245,13 @@ Data
     (`.`). This is the separator between the two sections.
 
   - #link(<data>)[_Data_]. This is the content that will fill each cell
-    of the table.  Generally every line of input in this section
+    of the table. Generally every line of input in this section
     corresponds to a row in the table, though there are exceptions noted
-    later. Cells are separated by the #option("tab") option which
+    later. Cells are separated by the #link-label(`tab`) option which
     defaults to a #smallcaps[tab] character.
 ]
 
-#pagebreak()
-
 = Region options <options>
-#let options = (
-  (`auto-lines`, (`allbox`,), `false`, [Like #option("box"), but also
-   draw a line between every cell if `true`. This is the same option from
-   `tablex`.]),
-  (`box`, (`frame`,), `false`, [If `true`, draw a line around the entire
-   table.]),
-  (`breakable`, (`nokeep`,), `false`, [If `true`, the table can span
-   multiple pages if necessary.]),
-  (`decimalpoint`, (), `"."`, [The string used to separate the integral
-   part of a number from the fractional part.]),
-  (`doublebox`, (`doubleframe`,), `false`, [Like #option("box"), but
-   also draw a second line around the entire table if `true`.]),
-  (`font`, (), `"Times"`, [The font for the table. Can be overridden
-   later by the format specifications.]),
-  (`header-rows`, (), `1`, [The number of rows at the beginning of the
-   table to consider part of the "header" for the purposes of
-   #option("repeat-header"). This option is also controlled by `.TH`
-   rows in the table data.]),
-  // leading
-  (`macros`, (), `(:)`, [A dictionary of (name, function) pairs that can
-   be used with column modifier `m`.]),
-  // pad
-  (`repeat-header`, (), `false`, [If #option("breakable") is `true` and
-   this option is `true`, then the table header controlled by
-   #option("header-rows") will be re-displayed on each subsequent page.
-   This option is also controlled by `.TH` rows in the table data.]),
-  (`stroke`, (`linesize`,), `1pt`, [How to draw all lines in the
-   table.]),
-  (`tab`, (), [`"\t"` (a #smallcaps[tab] character)], [The string
-   delimiter that separates different cells within a given row of the
-   table data.]),
-  (`tbl-align`, (), `left`, [How to align the table as a whole.]),
-)
 #prose[
 
   In addition to the overall #link(<intro>)[table syntax] itself, you
@@ -257,55 +268,79 @@ Data
 
   The following options are recognized:
 
-  #style(styles => {
-    let width = calc.max(..options.map(o => measure(o.first(), styles).width))
-    let first = true
-    for (name, aliases, default, desc) in options {
-      aliases = aliases.join([, ])
-      if aliases != none { aliases = [_Aliases:_ #aliases \ ] }
-      block(
-        breakable: false,
-        width: 100%,
-        inset: (top: 0em, bottom: 0.5em),
-        below: 0.5em,
-        stroke: (bottom: 0.5pt + gray),
+  / *`auto-lines`*, \ `allbox`: Like #link-label(`box`), but also draw a
+    line between every cell if `true`. This is the same option from
+    `tablex`.
 
-        stack(
-          dir: ltr,
-          1em,
-          box(width: width, [#strong(name) #label("options." + name.text)]),
-          1em,
-          box(width: 100% - width - 0.5in)[#desc \ \ #aliases _Default:_ #default]
-        ),
-      )
-    }
-  })
+    _Default:_ `false`
+
+  / *`box`*, \ `frame`: If `true`, draw a line around the entire table.
+
+    _Default:_ `false`
+
+  / *`breakable`*, \ `nokeep`: If `true`, the table can span multiple
+    pages if necessary.
+
+    _Default:_ `false`
+
+  / *`center`*, \ `centre`: Aliases for a #link-label(`tbl-align`) value
+    of `center`.
+
+  / *`decimalpoint`*: The string used to separate the integral part of a
+    number from the fractional part. Used in #link-label(`N`)-classified
+    columns.
+
+    _Default:_ `"."`
+
+  / *`doublebox`*, \ `doubleframe`: Like #link-label(`box`), but also
+    draw a second line around the entire table if `true`.
+
+    _Default:_ `false`
+
+  / *`font`*: The font for the table. Can be overridden later by the
+    #TK/*f*/ column modifier.
+
+    _Default:_ `"Times"`
+
+  / *`header-rows`*: The number of rows at the beginning of the table to
+    consider part of the "header" for the purposes of
+    #link-label(`repeat-header`). This option is also controlled by
+    `.TH` rows in the table data.
+
+    _Default:_ `1`
+
+  // leading
+
+  / *`macros`*: A dictionary of (name, function) pairs that can be used
+    with column modifier #TK/*m*/.
+
+    _Default:_ `(:)`
+
+  // pad
+
+  / *`repeat-header`*: If #link-label(`breakable`) is `true` and this
+    option is `true`, then the table header controlled by
+    #link-label(`header-rows`) will be re-displayed on each subsequent
+    page. This option is also controlled by `.TH` rows in the table
+    data.
+
+    _Default:_ `false`
+
+  / *`stroke`*, \ `linesize`: How to draw all lines in the table.
+
+    _Default:_ `1pt`
+
+  / *`tab`*: The string delimiter that separates different cells within
+    a given row of the table data.
+
+    _Default:_ `"\t"` (a #smallcaps[tab] character)
+
+  / *`tbl-align`*: How to align the table as a whole.
+
+    _Default:_ `left`
 ]
 
 = Format specifications <specs>
-#let classes = (
-  (`L`, [], [Left align.]),
-  (`R`, [], [Right align.]),
-  (`C`, [], [Center align.]),
-  (`N`, [], [Numerically align.]),
-  (`S`, [], [This cell is column-spanned by the previous cell to the left in
-   the current row. \ \ _The corresponding table data entries should be
-   empty._]),
-  (`^`, [(caret)], [This cell is row-spanned by the corresponding cell
-   in the previous row above. \ \ _The corresponding table data entries
-   should be empty._]),
-  (`_`, [(underscore)], [This cell contains a vertically-centered
-   horizontal rule. \ \ _The corresponding table data entries should be
-   empty._ \ _Aliases:_ `-`]),
-  (`=`, [(equals sign)], [Same as #class("_"), but draw a double
-   horizontal rule instead. \ \ _The corresponding table data entries
-   should be empty._]),
-  (`|`, [(vertical bar)], [This classifier does not actually begin a new
-   column, but rather indicates the location of a vertical line. \ \ If
-   placed at the beginning of a row definition, the line is drawn to the
-   left of the first cell in that row. Otherwise, it is drawn to the
-   right of the current cell in that row.]),
-)
 #prose[
   The format specifications section controls the layout and style of
   cells within rows and columns of the table.
@@ -316,32 +351,39 @@ Data
   classifier may be followed by any number of _column modifiers_, some
   of which may have required arguments enclosed in parentheses.
 
-  #pagebreak()
-
   The following column classifiers are recognized. They may be given as
   either capital or lowercase.
 
-  #style(styles => {
-    let width = calc.max(..classes.map(o => measure([#o.at(0) #o.at(1)], styles).width))
-    let first = true
-    for (class, sym-desc, desc) in classes {
-      block(
-        breakable: false,
-        width: 100%,
-        inset: (top: 0em, bottom: 0.5em),
-        below: 0.5em,
-        stroke: (bottom: 0.5pt + gray),
+  / *`L`*: Left align.
+  / *`R`*: Right align.
+  / *`C`*: Center align.
+  / *`N`*: Numerically align.
+  / *`S`*: This cell is column-spanned by the previous cell to the left
+    in the current row.
 
-        stack(
-          dir: ltr,
-          1em,
-          box(width: width)[#strong(class) #sym-desc #label("classes." + class.text)],
-          1em,
-          box(width: 100% - width - 0.5in, desc),
-        ),
-      )
-    }
-  })
+    _The corresponding table data entries should be empty._
+
+  / *`^`* (caret): This cell is row-spanned by the corresponding cell in
+    the previous row above.
+
+    _The corresponding table data entries should be empty._
+
+  / *`_`* (underscore), \ `-` (hyphen): This cell contains a
+    vertically-centered horizontal rule.
+
+    _The corresponding table data entries should be empty._
+
+  / *`=`* (equals sign): Same as #link-label(`_`), but draw a double
+    horizontal rule instead.
+
+    _The corresponding table data entries should be empty._
+
+  / *`|`* (vertical bar): This classifier does not actually begin a new
+    column, but rather indicates the location of a vertical line.
+
+    If placed at the beginning of a row definition, the line is drawn to
+    the left of the first cell in that row. Otherwise, it is drawn to
+    the right of the current cell in that row.
 ]
 
 = Data <data>
