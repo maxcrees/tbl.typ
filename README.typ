@@ -379,9 +379,32 @@ The following column classifiers are recognized. They may be given as
 either capital or lowercase.
 
 / *`L`*: #strong[L]eft align.
+
 / *`R`*: #strong[R]ight align.
+
 / *`C`*: #strong[C]enter align.
+
 / *`N`*: #strong[N]umerically align.
+
+  All cells with this classifier in the current column are centered with
+  respect to an _alignment point_, which is determined according to the
+  following rules:
+
+  - One position after the leftmost occurrence of the _non-printing
+    token_ `\&`, if any is present.
+
+  - Otherwise, the rightmost occurrence of the
+    #link-label(`decimalpoint`) string that immediately precedes a
+    digit.
+
+  - Otherwise, the rightmost digit.
+
+  - Otherwise, the content is instead centered with respect to the
+    column as a whole.
+
+  The alignment point is centered horizontally with respect to the
+  column as a whole.
+
 / *`S`*: This cell is column-spanned by the previous cell to the left in
   the current row.
 
@@ -409,7 +432,6 @@ either capital or lowercase.
   the left of the first cell in that row. Otherwise, it is drawn to the
   right of the current cell in that row.
 
-#pagebreak(weak: true)
 == Column modifiers <mods>
 The following column modifiers are recognized. They may be given as
 either capital or lowercase.
