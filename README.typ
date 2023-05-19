@@ -104,6 +104,7 @@
 })
 
 #let TK = strong(text(fill: red)[TK])
+#let troff = smallcaps[troff]
 #let issue(num) = link(
   "https://github.com/sroracle/tbl.typ/issues/" + str(num),
   [GH\##num],
@@ -236,9 +237,9 @@ either `table()` or `tablex()` can require rather verbose syntax.
 The `tbl.typ` project is an effort to allow the expression of rich
 tables in Typst using a more terse syntax. This syntax comes from a
 #smallcaps[unix] heritage: the `tbl` preprocessor which designed for use
-with the traditional #smallcaps[troff] typesetting system @tbl.1 @tbl.7
-@Cherry. Important differences between the syntax of traditional `tbl`
-and `tbl.typ` are noted #link(<diff>)[later in this document].
+with the traditional #troff typesetting system @tbl.1 @tbl.7 @Cherry.
+Important differences between the syntax of traditional `tbl` and
+`tbl.typ` are noted #link(<diff>)[later in this document].
 
 After importing the library using `#import "tbl.typ"`, the basic format
 of a table when using `tbl.typ` is the following:
@@ -504,8 +505,8 @@ either capital or lowercase.
 - `.T&` in the #link(<data>)[table data] is not currently supported.
   (#issue(4))
 
-- Within text blocks, `.\"` comments are not removed, and
-  other #smallcaps[troff] commands are not rejected. (#issue(6))
+- Within text blocks, `.\"` comments are not removed, and other #troff
+  commands are not rejected. (#issue(6))
 
 = Examples
 
