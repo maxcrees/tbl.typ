@@ -69,7 +69,9 @@
       if it.level == 1 { (bottom: 1pt) }
       else { none },
     width: 100%,
-    [#counter(heading).display() #it.body],
+
+    if it.body == [Contents] { it.body }
+    else [#counter(heading).display() #it.body],
   )
 }
 
