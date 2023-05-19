@@ -35,7 +35,10 @@
 #set text(
   font: font,
   size: 14pt,
+  hyphenate: true,
+  overhang: true,
 )
+#set par(leading: 0.5em, justify: true)
 
 #show link: set text(fill: blue)
 
@@ -64,12 +67,6 @@
     width: 100%,
     it.body,
   )
-}
-
-#let prose = it => {
-  set par(leading: 0.5em, justify: true)
-  set text(hyphenate: true, overhang: true)
-  it
 }
 
 #show terms: it => style(styles => {
@@ -142,6 +139,9 @@
 )
 
 #show raw.where(block: true): it => {
+  set par(justify: false)
+  set text(hyphenate: auto, overhang: false)
+
   if it.lang == none or not it.lang.starts-with("tbl") {
     block(
       width: 100%,
@@ -218,25 +218,23 @@
 }
 
 = Introduction <intro>
-#prose[
-  Typst @Typst is "a new markup-based typesetting system that is
-  powerful and easy to learn." While Typst provides a built-in `table()`
-  function, it does not currently support more advanced features such as
-  row spans and column spans, fine-grain control of borders, or complex
-  cell alignments. Pg Biel's `tablex` project @tablex.typ provides many
-  of these features. However, it remains the case that writing a table
-  using either `table()` or `tablex()` can require rather verbose
-  syntax.
+Typst @Typst is "a new markup-based typesetting system that is powerful
+and easy to learn." While Typst provides a built-in `table()` function,
+it does not currently support more advanced features such as row spans
+and column spans, fine-grain control of borders, or complex cell
+alignments. Pg Biel's `tablex` project @tablex.typ provides many of
+these features. However, it remains the case that writing a table using
+either `table()` or `tablex()` can require rather verbose syntax.
 
-  The `tbl.typ` project is an effort to allow the expression of rich
-  tables in Typst using a more terse syntax. This syntax comes from a
-  #smallcaps[unix] heritage: the `tbl` preprocessor which designed for
-  use with the traditional #smallcaps[troff] typesetting system @tbl.1
-  @tbl.7 @Cherry. Important differences between the syntax of
-  traditional `tbl` and `tbl.typ` are noted in Section #TK.
+The `tbl.typ` project is an effort to allow the expression of rich
+tables in Typst using a more terse syntax. This syntax comes from a
+#smallcaps[unix] heritage: the `tbl` preprocessor which designed for use
+with the traditional #smallcaps[troff] typesetting system @tbl.1 @tbl.7
+@Cherry. Important differences between the syntax of traditional `tbl`
+and `tbl.typ` are noted #link(<diff>)[later in this document].
 
-  After importing the library using `#import "tbl.typ"`, the basic
-  format of a table when using `tbl.typ` is the following:
+After importing the library using `#import "tbl.typ"`, the basic format
+of a table when using `tbl.typ` is the following:
 
 ````
 ```tbl
@@ -245,29 +243,25 @@ Data
 ```
 ````
 
-  The two main components of this syntax are:
+The two main components of this syntax are:
 
-  - #link(<specs>)[_Format specifications_]. This describes the layout
-    of the table in terms of the number and style of columns for each
-    row.
+- #link(<specs>)[_Format specifications_]. This describes the layout of
+  the table in terms of the number and style of columns for each row.
 
-    The last line of the format specifications must end in a period
-    (`.`). This is the separator between the two sections.
+  The last line of the format specifications must end in a period (`.`).
+  This is the separator between the two sections.
 
-  - #link(<data>)[_Data_]. This is the content that will fill each cell
-    of the table. Generally every line of input in this section
-    corresponds to a row in the table, though there are exceptions noted
-    later. Cells are separated by the #link-label(`tab`) option which
-    defaults to a #smallcaps[tab] character.
-]
+- #link(<data>)[_Data_]. This is the content that will fill each cell of
+  the table. Generally every line of input in this section corresponds
+  to a row in the table, though there are exceptions noted later. Cells
+  are separated by the #link-label(`tab`) option which defaults to a
+  #smallcaps[tab] character.
 
 = Region options <options>
-#prose[
-
-  In addition to the overall #link(<intro>)[table syntax] itself, you
-  may specify _region options_ that control the parsing and styling of
-  the table as a whole using a "show-everything" rule prior to the
-  tables you would like to control. For example:
+In addition to the overall #link(<intro>)[table syntax] itself, you may
+specify _region options_ that control the parsing and styling of the
+table as a whole using a "show-everything" rule prior to the tables you
+would like to control. For example:
 
 ```
 #show: tbl.template.with(
@@ -276,127 +270,125 @@ Data
 )
 ```
 
-  The following options are recognized:
+The following options are recognized:
 
-  / *`auto-lines`*, \ `allbox`: Like #link-label(`box`), but also draw a
-    line between every cell if `true`. This is the same option from
-    `tablex`.
+/ *`auto-lines`*, \ `allbox`: Like #link-label(`box`), but also draw a
+  line between every cell if `true`. This is the same option from
+  `tablex`.
 
-    _Default:_ `false`
+  _Default:_ `false`
 
-  / *`box`*, \ `frame`: If `true`, draw a line around the entire table.
+/ *`box`*, \ `frame`: If `true`, draw a line around the entire table.
 
-    _Default:_ `false`
+  _Default:_ `false`
 
-  / *`breakable`*, \ `nokeep`: If `true`, the table can span multiple
-    pages if necessary.
+/ *`breakable`*, \ `nokeep`: If `true`, the table can span multiple
+  pages if necessary.
 
-    _Default:_ `false`
+  _Default:_ `false`
 
-  / *`center`*, \ `centre`: Aliases for a #link-label(`tbl-align`) value
-    of `center`.
+/ *`center`*, \ `centre`: Aliases for a #link-label(`tbl-align`) value
+  of `center`.
 
-  / *`decimalpoint`*: The string used to separate the integral part of a
-    number from the fractional part. Used in #link-label(`N`)-classified
-    columns.
+/ *`decimalpoint`*: The string used to separate the integral part of a
+  number from the fractional part. Used in #link-label(`N`)-classified
+  columns.
 
-    _Default:_ `"."`
+  _Default:_ `"."`
 
-  / *`doublebox`*, \ `doubleframe`: Like #link-label(`box`), but also
-    draw a second line around the entire table if `true`.
+/ *`doublebox`*, \ `doubleframe`: Like #link-label(`box`), but also draw
+  a second line around the entire table if `true`.
 
-    _Default:_ `false`
+  _Default:_ `false`
 
-  / *`font`*: The font for the table. Can be overridden later by the
-    #TK/*f*/ column modifier.
+/ *`font`*: The font for the table. Can be overridden later by the
+  #TK/*f*/ column modifier.
 
-    _Default:_ `"Times"`
+  _Default:_ `"Times"`
 
-  / *`header-rows`*: The number of rows at the beginning of the table to
-    consider part of the "header" for the purposes of
-    #link-label(`repeat-header`). This option is also controlled by
-    `.TH` rows in the table data.
+/ *`header-rows`*: The number of rows at the beginning of the table to
+  consider part of the "header" for the purposes of
+  #link-label(`repeat-header`). This option is also controlled by `.TH`
+  rows in the table data.
 
-    _Default:_ `1`
+  _Default:_ `1`
 
-  // leading
+// leading
 
-  / *`macros`*: A dictionary of (name, function) pairs that can be used
-    with column modifier #TK/*m*/.
+/ *`macros`*: A dictionary of (name, function) pairs that can be used
+  with column modifier #TK/*m*/.
 
-    _Default:_ `(:)`
+  _Default:_ `(:)`
 
-  // pad
+// pad
 
-  / *`repeat-header`*: If #link-label(`breakable`) is `true` and this
-    option is `true`, then the table header controlled by
-    #link-label(`header-rows`) will be re-displayed on each subsequent
-    page. This option is also controlled by `.TH` rows in the table
-    data.
+/ *`repeat-header`*: If #link-label(`breakable`) is `true` and this
+  option is `true`, then the table header controlled by
+  #link-label(`header-rows`) will be re-displayed on each subsequent
+  page. This option is also controlled by `.TH` rows in the table data.
 
-    _Default:_ `false`
+  _Default:_ `false`
 
-  / *`stroke`*, \ `linesize`: How to draw all lines in the table.
+/ *`stroke`*, \ `linesize`: How to draw all lines in the table.
 
-    _Default:_ `1pt`
+  _Default:_ `1pt`
 
-  / *`tab`*: The string delimiter that separates different cells within
-    a given row of the table data.
+/ *`tab`*: The string delimiter that separates different cells within a
+  given row of the table data.
 
-    _Default:_ `"\t"` (a #smallcaps[tab] character)
+  _Default:_ `"\t"` (a #smallcaps[tab] character)
 
-  / *`tbl-align`*: How to align the table as a whole.
+/ *`tbl-align`*: How to align the table as a whole.
 
-    _Default:_ `left`
-]
+  _Default:_ `left`
 
 = Format specifications <specs>
-#prose[
-  The format specifications section controls the layout and style of
-  cells within rows and columns of the table.
+The format specifications section controls the layout and style of cells
+within rows and columns of the table.
 
-  Each comma or new line of format specification begins a new _row
-  definition_. Within each row definition, encountering a _column
-  classifier_ character denotes a new column in the table. The
-  classifier may be followed by any number of _column modifiers_, some
-  of which may have required arguments enclosed in parentheses.
+Each comma or new line of format specification begins a new _row
+definition_. Within each row definition, encountering a _column
+classifier_ character denotes a new column in the table. The classifier
+may be followed by any number of _column modifiers_, some of which may
+have required arguments enclosed in parentheses.
 
-  The following column classifiers are recognized. They may be given as
-  either capital or lowercase.
+The following column classifiers are recognized. They may be given as
+either capital or lowercase.
 
-  / *`L`*: Left align.
-  / *`R`*: Right align.
-  / *`C`*: Center align.
-  / *`N`*: Numerically align.
-  / *`S`*: This cell is column-spanned by the previous cell to the left
-    in the current row.
+/ *`L`*: Left align.
+/ *`R`*: Right align.
+/ *`C`*: Center align.
+/ *`N`*: Numerically align.
+/ *`S`*: This cell is column-spanned by the previous cell to the left in
+  the current row.
 
-    _The corresponding table data entries should be empty._
+  _The corresponding table data entries should be empty._
 
-  / *`^`* (caret): This cell is row-spanned by the corresponding cell in
-    the previous row above.
+/ *`^`* (caret): This cell is row-spanned by the corresponding cell in
+  the previous row above.
 
-    _The corresponding table data entries should be empty._
+  _The corresponding table data entries should be empty._
 
-  / *`_`* (underscore), \ `-` (hyphen): This cell contains a
-    vertically-centered horizontal rule.
+/ *`_`* (underscore), \ `-` (hyphen): This cell contains a
+  vertically-centered horizontal rule.
 
-    _The corresponding table data entries should be empty._
+  _The corresponding table data entries should be empty._
 
-  / *`=`* (equals sign): Same as #link-label(`_`), but draw a double
-    horizontal rule instead.
+/ *`=`* (equals sign): Same as #link-label(`_`), but draw a double
+  horizontal rule instead.
 
-    _The corresponding table data entries should be empty._
+  _The corresponding table data entries should be empty._
 
-  / *`|`* (vertical bar): This classifier does not actually begin a new
-    column, but rather indicates the location of a vertical line.
+/ *`|`* (vertical bar): This classifier does not actually begin a new
+  column, but rather indicates the location of a vertical line.
 
-    If placed at the beginning of a row definition, the line is drawn to
-    the left of the first cell in that row. Otherwise, it is drawn to
-    the right of the current cell in that row.
-]
+  If placed at the beginning of a row definition, the line is drawn to
+  the left of the first cell in that row. Otherwise, it is drawn to the
+  right of the current cell in that row.
 
 = Data <data>
+
+= Differences from traditional `tbl` <diff>
 
 = Examples
 
