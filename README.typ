@@ -53,6 +53,7 @@
   )
 }
 
+#set heading(numbering: "1.1.")
 #show heading: it => {
   set text(size: calc.max(1.4em - 0.2em * (it.level - 1), 1em))
 
@@ -68,7 +69,7 @@
       if it.level == 1 { (bottom: 1pt) }
       else { none },
     width: 100%,
-    it.body,
+    [#counter(heading).display() #it.body],
   )
 }
 
@@ -227,7 +228,7 @@
   ]
 
   v(1fr)
-  outline()
+  outline(indent: true)
 }
 
 = Introduction <intro>
@@ -786,8 +787,9 @@ _
 43 Pica : 5.1 : --90000.000 : --5.9 : --8.8
 ```
 
+= References
 #bibliography(
   "README.yml",
-  title: [References],
+  title: none,
   style: "ieee",
 )
