@@ -135,10 +135,13 @@
   link(label(target), text)
 }
 
+#let example = figure.with(kind: "example", supplement: "Example")
 #show figure.where(kind: "example"): it => block(
   breakable: false,
 
   {
+    set par(justify: false)
+    set text(hyphenate: auto, overhang: false)
     {
       set text(font: font)
       if it.caption in (none, [], "") {
@@ -155,9 +158,6 @@
 )
 
 #show raw.where(block: true): it => {
-  set par(justify: false)
-  set text(hyphenate: auto, overhang: false)
-
   if it.lang == none or not it.lang.starts-with("tbl") {
     block(
       width: 100%,
@@ -175,37 +175,24 @@
       sep = (1em, 1em)
       width = 100%
     }
-    let caption = none
-    let src = it.text
-    let caption = src.match(regex(`(?m)\A\.\\"[ \t]*Caption:[ \t]*(.*?)$`.text))
-    if caption != none {
-      src = src.slice(caption.end + 1)
-      caption = eval("[" + caption.captures.first() + "]")
-    }
 
-    figure(
-      kind: "example",
-      supplement: "Example",
-      caption: caption,
+    align(center, stack(
+      dir: dir,
 
-      align(center, stack(
-        dir: dir,
-
-        {
-          set text(size: 0.8em)
-          block(
-            width: width,
-            fill: luma(85%),
-            inset: 0.5em,
-            stroke: 1pt,
-            align(left, "```tbl\n" + src + "\n```"),
-          )
-        },
-        sep.first(),
-        align(horizon, raw(lang: "tbl", src)),
-        sep.last(),
-      ))
-    )
+      {
+        set text(size: 0.8em)
+        block(
+          width: width,
+          fill: luma(85%),
+          inset: 0.5em,
+          stroke: 1pt,
+          align(left, "```tbl\n" + it.text + "\n```"),
+        )
+      },
+      sep.first(),
+      align(horizon, raw(lang: "tbl", it.text)),
+      sep.last(),
+    ))
   } else {
     it
   }
@@ -292,11 +279,14 @@ The following options are recognized:
   line between every cell if `true`. This is the same option from
   `tablex`.
 
-  _Default:_ `false`
+  _Default:_ `false` \
+  #emph[cf. @ex-att, @ex-grade[], @ex-rocks[], @ex-lines[].]
 
 / *`box`*, \ `frame`: If `true`, draw a line around the entire table.
 
-  _Default:_ `false`
+  _Default:_ `false` \
+  #emph[cf. @ex-spans, @ex-facts[], @ex-software[], @ex-food[],
+  @ex-bridges[].]
 
 / *`breakable`*, \ `nokeep`: If `true`, the table can span multiple
   pages if necessary.
@@ -315,12 +305,14 @@ The following options are recognized:
 / *`doublebox`*, \ `doubleframe`: Like #link-label(`box`), but also draw
   a second line around the entire table if `true`.
 
-  _Default:_ `false`
+  _Default:_ `false` \
+  #emph[cf. @ex-read.]
 
 / *`font`*: The font for the table. Can be overridden later by the
   #link-label(`f(...)`) column modifier.
 
-  _Default:_ `"Times"`
+  _Default:_ `"Times"` \
+  _n.b. all tables in this document are formatted with the #font font._
 
 / *`header-rows`*: The number of rows at the beginning of the table to
   consider part of the "header" for the purposes of
@@ -357,7 +349,10 @@ The following options are recognized:
 / *`tab`*: The string delimiter that separates different cells within a
   given row of the table data.
 
-  _Default:_ `"\t"` (a #smallcaps[tab] character)
+  _Default:_ `"\t"` (a #smallcaps[tab] character) \
+  #emph[cf. @ex-read. Most tables in this document use `"|"` (a vertical
+  bar) for readability purposes, though this should not be confused with
+  #link-label(`|`)[the column classifier of the same name].]
 
 / *`tbl-align`*: How to align the table as a whole.
 
@@ -405,15 +400,20 @@ either capital or lowercase.
   The alignment point is centered horizontally with respect to the
   column as a whole.
 
+  #emph[cf. @ex-software, @ex-food[], @ex-stack[], @ex-numeric[],
+  @ex-att[], @ex-read[].]
+
 / *`S`*: This cell is column-spanned by the previous cell to the left in
   the current row.
 
-  _The corresponding table data entries should be empty._
+  _The corresponding table data entries should be empty._ \
+  #emph[cf. @ex-food, @ex-bridges[], @ex-att[], @ex-rocks[], @ex-read[].]
 
 / *`^`* (caret): This cell is row-spanned by the corresponding cell in
   the previous row above.
 
-  _The corresponding table data entries should be empty._
+  _The corresponding table data entries should be empty._ \
+  #emph[cf. @ex-spans.]
 
 / *`_`* (underscore), \ `-` (hyphen): This cell contains a
   vertically-centered horizontal rule.
@@ -431,6 +431,9 @@ either capital or lowercase.
   If placed at the beginning of a row definition, the line is drawn to
   the left of the first cell in that row. Otherwise, it is drawn to the
   right of the current cell in that row.
+
+  #emph[cf. @ex-spans, @ex-software[], @ex-food[], @ex-bridges[],
+  @ex-stack[].]
 
 == Column modifiers <mods>
 The following column modifiers are recognized. They may be given as
@@ -451,6 +454,8 @@ either capital or lowercase.
   `f(I)` is an alias for the #link-label(`i`) modifier. \
   `f(BI)` is an alias for providing both of the above modifiers.
 
+  #emph[cf. @ex-rocks.]
+
 / *`i`*: #strong[I]talicize text using the Typst `emph` element
   function.
 
@@ -463,6 +468,8 @@ either capital or lowercase.
   terms of row number and column number.
 
 / *`o(...)`*: Fill c#strong[o]lor for the cell is given in parentheses.
+
+  #emph[cf. @ex-grade.]
 
 / *`p(...)`*: #strong[P]oint size of the font is modified according to
   the argument in parentheses.
@@ -482,10 +489,16 @@ either capital or lowercase.
   - `P`: six _picas_ equals one inch.
   - `M`: 100 of these equals one em.
 
+  #emph[cf. @ex-stack, @ex-rocks[], @ex-read[].]
+
 / *`t`*: #strong[T]op --- set the vertical alignment to `top`.
+
+  #emph[cf. @ex-rocks.]
 
 / *`u`*: "Stagger" the affected cells so that they appear *between* the
   current row and the previous one above.
+
+  #emph[cf. @ex-stagger.]
 
 / *`v(...)`*: #strong[V]ertical spacing (leading) is modified according
   to the argument in parentheses.
@@ -504,6 +517,8 @@ either capital or lowercase.
 
   This overrides modifier #link-label(`x`).
 
+  #emph[cf. @ex-rocks, @ex-lines[].]
+
 / *`x`*: E#strong[x]pand the width of the column to `1fr`, which will
   consume all of the remaining horizontal space on the page or in the
   current container. Applying this modifier to multiple columns will
@@ -513,6 +528,8 @@ either capital or lowercase.
 
 / *`z`*: The corresponding cell is treated as if it has #strong[z]ero
   width for the purpose of determining the width of its column.
+
+  #emph[cf. @ex-spans.]
 
 / *Number*: A number given as a column modifier is interpreted as a
   #link-label(`p(...)`)[`en` length] which is used as a _column
@@ -525,6 +542,8 @@ either capital or lowercase.
   and `right` keys of the #link-label(`pad`) option. When not specified,
   this defaults to `0.75em + 0.75em`, which traditional #troff calls
   `3n`.
+
+  #emph[cf. @ex-lines, @ex-read[].]
 
 = Data <data>
 
@@ -605,17 +624,31 @@ either capital or lowercase.
 
 = Examples
 
-#let template = tbl.template.with(
-  font: font,
-)
+#let template = (..args, it) => {
+  block(breakable: false)[
+    *The following examples are formatted with these region options:*
+
+    #raw(
+      block: true,
+      lang: none,
+      "#show: tbl.template.with" + repr(args)
+    )
+  ]
+  tbl.template(
+    font: font,
+    ..args,
+    it,
+  )
+}
 
 #show: template.with(
   box: true,
   tab: "|",
 )
 
+#example(
+caption: [adapted from @tbl.7],
 ```tbl-example
-.\" Caption: adapted from @tbl.7
 lz  s | rt
 lt| cb| ^
 ^ | rz  s.
@@ -623,9 +656,11 @@ left||r
 l|center|
 |right
 ```
+) <ex-spans>
 
+#example(
+caption: [adapted from @Cherry[p. 41]],
 ```tbl-example
-.\" Caption: adapted from @Cherry[p. 41]
 c c c
 l l ne .
 Fact|Location|Statistic
@@ -635,9 +670,11 @@ Longest river|Mississippi-Missouri|3,710 mi.
 Highest mountain|Mount McKinley, AK|20,320 ft.
 Lowest point|Death Valley, CA|-- 282 ft.
 ```
+) <ex-facts>
 
+#example(
+caption: [adapted from @tbl.7],
 ```tbl-example
-.\" Caption: adapted from @tbl.7
 r| l
 r  n.
 software|version
@@ -647,9 +684,11 @@ Mutt|1.8.0
 Ruby|1.8.7.374
 TeX Live|2015
 ```
+) <ex-software>
 
+#example(
+caption: [adapted from @Cherry[p. 43]],
 ```tbl-example
-.\" Caption: adapted from @Cherry[p. 43]
 cf(Courier New) s s s
 c | cs s
 c | cs s
@@ -669,10 +708,11 @@ Lima beans|7.5|.8|22.0
 Milk|3.3|4.0|5.0
 Mushrooms|3.5|.4|6.0
 Rye bread|9.0|.6|52.7
-```
+```) <ex-food>
 
+#example(
+caption: [adapted from @Cherry[p. 42]],
 ```tbl-example
-.\" Caption: adapted from @Cherry[p. 42]
 c s s
 c | c | c
 l | l | ne .
@@ -696,22 +736,27 @@ Throgs Neck|O . H . Ammann|1800
 _
 George Washington|O . H . Ammann|3500
 ```
+) <ex-bridges>
 
+#pagebreak(weak: true)
 #show: template.with(
   tab: "|",
 )
 
+#example(
+caption: [adapted from @tbl.7],
 ```tbl-example
-.\" Caption: adapted from @tbl.7
 rb c  lb
 r  ci l.
 r|center|l
 ri|ce|le
 right|c|left
 ```
+) <ex-align>
 
+#example(
+caption: [adapted from @tbl.1],
 ```tbl-example
-.\" Caption: adapted from @tbl.1
 Cf(BI) Cf(BI) Cf(B), C C Cu.
 n|n*#sym.times;*n|difference
 1|1
@@ -721,9 +766,11 @@ n|n*#sym.times;*n|difference
 5|25|9
 6|36|11
 ```
+) <ex-stagger>
 
+#example(
+caption: [adapted from @Cherry[p. 42]],
 ```tbl-example
-.\" Caption: adapted from @Cherry[p. 42]
 c c
 np(-2) | n | .
 |Stack
@@ -739,9 +786,11 @@ np(-2) | n | .
 5|2.1
 |_
 ```
+) <ex-stack>
 
+#example(
+caption: [adapted from @Cherry[p. 37]],
 ```tbl-example
-.\" Caption: adapted from @Cherry[p. 37]
 n.
 13
 4.2
@@ -753,14 +802,16 @@ abc\&
 43\&3.22
 749.12
 ```
+) <ex-numeric>
 
 #show: template.with(
   allbox: true,
   tab: "|",
 )
 
+#example(
+caption: [adapted from @Cherry[p. 41]],
 ```tbl-example
-.\" Caption: adapted from @Cherry[p. 41]
 c s s
 c c c
 n n ne .
@@ -773,7 +824,9 @@ Year|Price|Dividend
 8|24-30|1.20
 9|29-37|.30\*
 ```
+) <ex-att>
 
+#example(
 ```tbl-example
 cbo(luma(85%))
 co(luma(95%))  c.
@@ -783,9 +836,11 @@ B|$ >= 450$
 C|$ >= 390$
 D|$ >= 330$
 ```
+) <ex-grade>
 
+#example(
+caption: [adapted from @Cherry[p. 44]],
 ```tbl-example
-.\" Caption: adapted from @Cherry[p. 44]
 cf(I) s s
 c cw(1in) cw(1in)
 ltp(9) ltp(9) ltp(9).
@@ -808,10 +863,12 @@ Cretaceous sediments redeposited
 by recent glaciation.
 T}
 ```
+) <ex-rocks>
 
+#example(
+caption: [adapted from @tbl.7],
 ```tbl-example-wide
-.\" Caption: adapted from @tbl.7
-le le7| lw(10).
+le le7 lw(10).
 The fourth line|_|line 1
 of this column|=|line 2
 determines|\_|line 3
@@ -822,15 +879,17 @@ T{
 No break here.
 T}||line 5
 ```
+) <ex-lines>
 
+#pagebreak(weak: true)
 #show: template.with(
   doublebox: true,
   tab: " : ",
-  nokeep: true,
 )
 
+#example(
+caption: [adapted from @Cherry[p. 45]],
 ```tbl-example
-.\" Caption: adapted from @Cherry[p. 45]
 cb s s s s
 cp(-2) s s s s
 c | c | c | c | c
@@ -848,6 +907,7 @@ _
 31 Pica : 3 : --3.8 : --2.4 : --3.6
 43 Pica : 5.1 : --90000.000 : --5.9 : --8.8
 ```
+) <ex-read>
 
 = References
 #bibliography(
