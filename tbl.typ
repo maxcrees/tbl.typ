@@ -599,9 +599,16 @@
 
       for (j, col) in row.enumerate() {
         let text-block = false
-        if col == "#tbl.text-block" {
+        if col.trim() == "#tbl.text-block" {
           text-block = true
           col = text-blocks.remove(0)
+        } else if col.trim().starts-with("#tbl.text-block") {
+          assert-ctx(
+            false,
+            "Nothing should follow text block close `T}` in same cell",
+            row: i,
+            col: j,
+          )
         }
 
         col = col.trim()
