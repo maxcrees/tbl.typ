@@ -585,12 +585,19 @@ Some input lines do not represent table rows at all:
   first cell in a row begin with a period, use a Typst escape like `\.`
   or put a #smallcaps[space] in front of it.
 
-#pagebreak(weak: true)
 == Table entries
 The string representing the cell content is called the _table entry_.
 For the most part, this is simply passed to the Typst `eval` function,
-so you can use Typst markup within a table entry. There are a few
-important caveats:
+so you can use Typst markup within a table entry.
+
+Any leading or trailing spaces or tabs within a table entry (so long as
+#link-label(`tab`) is neither) are ignored. The
+#link(<examples>)[Examples] section takes advantage of this in order to
+improve legibility, but note that making the input look pretty is *not*
+a requirement: see @ex-align.
+
+#pagebreak(weak: true)
+There are a few important caveats:
 
 - The `eval` function does not have access to anything other than the
   Typst standard library. This means it is not currently possible to
@@ -610,8 +617,8 @@ important caveats:
   table entry are removed.
 
 == Special table entries
-If certain characters are alone in a table entry, they gain a special
-meaning:
+If a table entry consists of any of the following strings alone
+(ignoring any spaces or tabs), then they gain a special meaning:
 
   - *`_`* (a single underscore): Draw a horizontal line through the
     middle of this otherwise empty cell. The line touches any adjacent
@@ -671,6 +678,8 @@ is the total number of columns in the table.
 - #link(<options>)[Region options] must be specified using a
   "show-everything" rule; they cannot be provided within the `raw` block
   itself.
+
+- The `nospaces` option is always in effect and cannot be disabled.
 
 - The #link-label(`tab`) option may be a multi-character string.
 
@@ -744,7 +753,7 @@ is the total number of columns in the table.
 - A table data row consisting of only `=` (double horizontal line) is
   not currently supported.
 
-= Examples
+= Examples <examples>
 
 #let template = (..args, it) => {
   block(breakable: false)[
@@ -769,95 +778,96 @@ is the total number of columns in the table.
 )
 
 #example(
-caption: [adapted from @tbl.7],
-```tbl-example
-lz  s | rt
-lt| cb| ^
-^ | rz  s.
-left||r
-l|center|
-|right
-```
+  caption: [adapted from @tbl.7],
+  ```tbl-example
+  Lz     S   | Rt
+  Lt  |  Cb  | ^
+  ^   |  Rz    S.
+  left|      | r
+  l   |center|
+      |     right
+  ```
 ) <ex-spans>
 
 #example(
-caption: [adapted from @Cherry[p. 41]],
-```tbl-example
-c c c
-l l ne .
-Fact|Location|Statistic
-Largest state|Alaska|591,004 sq. mi.
-Smallest state|Rhode Island|1,212 sq. mi.
-Longest river|Mississippi-Missouri|3,710 mi.
-Highest mountain|Mount McKinley, AK|20,320 ft.
-Lowest point|Death Valley, CA|-- 282 ft.
-```
+  caption: [adapted from @Cherry[p. 41]],
+  ```tbl-example-wide
+          C                C                   C
+          L                L                   Ne.
+  Fact            |Location            |Statistic
+  Largest state   |Alaska              |591,004 sq. mi.
+  Smallest state  |Rhode Island        |1,212 sq. mi.
+  Longest river   |Mississippi-Missouri|3,710 mi.
+  Highest mountain|Mount McKinley, AK  |20,320 ft.
+  Lowest point    |Death Valley, CA    |-- 282 ft.
+  ```
 ) <ex-facts>
 
 #example(
-caption: [adapted from @tbl.7],
-```tbl-example
-r| l
-r  n.
-software|version
-_
-AFL|2.39b
-Mutt|1.8.0
-Ruby|1.8.7.374
-TeX Live|2015
-```
+  caption: [adapted from @tbl.7],
+  ```tbl-example
+        R | L
+        R   N.
+  software|version
+  _
+       AFL|2.39b
+      Mutt|1.8.0
+      Ruby|1.8.7.374
+  TeX Live|2015
+  ```
 ) <ex-software>
 
 #example(
-caption: [adapted from @Cherry[p. 43]],
-```tbl-example
-cf(Courier New) s s s
-c | cs s
-c | cs s
-c |c|c|c
-c |c|c|c
-l |n |ne |ne.
-Composition of Foods
-_
-Food|Percent by Weight
-\^|_
-\^|Protein|Fat|Carbo-
-\^|\^|\^|hydrate
-_
-Apples|.4|.5|13.0
-Halibut|18.4|5.2|...
-Lima beans|7.5|.8|22.0
-Milk|3.3|4.0|5.0
-Mushrooms|3.5|.4|6.0
-Rye bread|9.0|.6|52.7
-```) <ex-food>
+  caption: [adapted from @Cherry[p. 43]],
+  ```tbl-example
+  Cf(Courier New)  S       S   S
+  C              | C       S   S
+  C              | C       S   S
+  C              | C     | C | C
+  C              | C     | C | C
+  L              | N     |N e|N e.
+  Composition of Foods
+  _
+  Food           |Percent by Weight
+  \^             |_
+  \^             |Protein|Fat|Carbo-
+  \^             |\^     |\^ |hydrate
+  _
+  Apples         |  .4   | .5|13.0
+  Halibut        |18.4   |5.2|...
+  Lima beans     | 7.5   | .8|22.0
+  Milk           | 3.3   |4.0| 5.0
+  Mushrooms      | 3.5   | .4| 6.0
+  Rye bread      | 9.0   | .6|52.7
+  ```
+) <ex-food>
 
 #example(
-caption: [adapted from @Cherry[p. 42]],
-```tbl-example
-c s s
-c | c | c
-l | l | ne .
-Major New York Bridges
-_
-Bridge|Designer|Length
-_
-Brooklyn|J . A . Roebling|1595
-Manhattan|G . Lindenthal|1470
-Williamsburg|L . L . Buck|1600
-_
-Queensborough|Palmer &|1182
-|Hornbostel
-_
-||1380
-Triborough|O . H . Ammann|_
-||383
-_
-Bronx Whitestone|O . H . Ammann|2300
-Throgs Neck|O . H . Ammann|1800
-_
-George Washington|O . H . Ammann|3500
-```
+  caption: [adapted from @Cherry[p. 42]],
+  ```tbl-example
+  C                  S                S
+  C                | C              | C
+  L                | L              | Ne.
+  Major New York Bridges
+  _
+  Bridge           |Designer        |Length
+  _
+  Brooklyn         |J . A . Roebling|1595
+  Manhattan        |G . Lindenthal  |1470
+  Williamsburg     |L . L . Buck    |1600
+  _
+  Queensborough    |Palmer &        |1182
+                   |Hornbostel
+  _
+                   |                |1380
+  Triborough       |O . H . Ammann  |_
+                   |                |383
+  _
+  Bronx Whitestone |O . H . Ammann  |2300
+  Throgs Neck      |O . H . Ammann  |1800
+  _
+  George Washington|O . H . Ammann  |3500
+  ```
 ) <ex-bridges>
 
 #pagebreak(weak: true)
@@ -866,64 +876,64 @@ George Washington|O . H . Ammann|3500
 )
 
 #example(
-caption: [adapted from @tbl.7],
-```tbl-example
-rb c  lb
-r  ci l.
-r|center|l
-ri|ce|le
-right|c|left
-```
+  caption: [adapted from @tbl.7],
+  ```tbl-example
+  rBclB, rcIl.
+  r|center|l
+  ri|ce|le
+  right|c|left
+  ```
 ) <ex-align>
 
 #example(
-caption: [adapted from @tbl.1],
-```tbl-example
-Cf(BI) Cf(BI) Cf(B), C C Cu.
-n|n*#sym.times;*n|difference
-1|1
-2|4|3
-3|9|5
-4|16|7
-5|25|9
-6|36|11
-```
+  caption: [adapted from @tbl.1],
+  ```tbl-example
+  Cf(BI) Cf(BI)            Cf(B)
+  C      C                 Cu.
+  n     |n*_#sym.times;_*n|difference
+  1     |1
+  2     |4                |3
+  3     |9                |5
+  4     |16               |7
+  5     |25               |9
+  6     |36               |11
+  ```
 ) <ex-stagger>
 
 #example(
-caption: [adapted from @Cherry[p. 42]],
-```tbl-example
-c c
-np(-2) | n | .
-|Stack
-|_
-1|46
-|_
-2|23
-|_
-3|15
-|_
-4|6.5
-|_
-5|2.1
-|_
-```
+  caption: [adapted from @Cherry[p. 42]],
+  ```tbl-example
+  C         C
+  N p(-2) | N   |.
+          |Stack
+          |_
+         1|46
+          |_
+         2|23
+          |_
+         3|15
+          |_
+         4|6.5
+          |_
+         5|2.1
+          |_
+  ```
 ) <ex-stack>
 
 #example(
-caption: [adapted from @Cherry[p. 37]],
-```tbl-example
-n.
-13
-4.2
-26.4.12
-26.4. 12
-26.4 .12
-abc
-abc\&
-43\&3.22
-749.12
-```
+  caption: [adapted from @Cherry[p. 37]],
+  ```tbl-example
+  N.
+  13
+  4.2
+  26.4.12
+  26.4. 12
+  26.4 .12
+  abc
+  abc\&
+  43\&3.22
+  749.12
+  ```
 ) <ex-numeric>
 
 #show: template.with(
@@ -932,75 +942,77 @@ abc\&
 )
 
 #example(
-caption: [adapted from @Cherry[p. 41]],
-```tbl-example
-c s s
-c c c
-n n ne .
-AT&T Common Stock
-Year|Price|Dividend
-1984|15-20|\$1.20
-5|19-25|1.20
-6|21-28|1.20
-7|20-36|1.20
-8|24-30|1.20
-9|29-37|.30\*
-```
+  caption: [adapted from @Cherry[p. 41]],
+  ```tbl-example
+  C    S      S
+  C    C      C
+  N    N      N e.
+  AT&T Common Stock
+  Year|Price |Dividend
+  1984|15-20 |\$1.20
+     5|19-25 |1.20
+     6|21-28 |1.20
+     7|20-36 |1.20
+     8|24-30 |1.20
+     9|29-37 |.30\*
+  ```
 ) <ex-att>
 
 #example(
-```tbl-example
-cbo(luma(85%))
-co(luma(95%))  c.
-Grade|Points
-A|$ >= 510$
-B|$ >= 450$
-C|$ >= 390$
-D|$ >= 330$
-```
+  ```tbl-example
+  C b o(luma(85%))
+  C   o(luma(95%)) C.
+  Grade           |Points
+  A               |$ >= 510$
+  B               |$ >= 450$
+  C               |$ >= 390$
+  D               |$ >= 330$
+  ```
 ) <ex-grade>
 
 #example(
-caption: [adapted from @Cherry[p. 44]],
-```tbl-example
-cf(I) s s
-c cw(1in) cw(1in)
-ltp(9) ltp(9) ltp(9).
-New York Area Rocks
-Era|Formation|Age (years)
-Precambrian|Reading Prong|>1 billion
-Paleozoic|Manhattan Prong|400 million
-Mesozoic|T{
-#set text(hyphenate: true, overhang: true)
-Newark Basin, incl.
-Stockton, Lockatong, and Brunswick
-formations; also Watchungs
-and Palisades.
-T}|200 million
-Cenozoic|Coastal Plain|T{
-#set text(hyphenate: true, overhang: true)
-#set par(justify: true)
-On Long Island 30,000 years;
-Cretaceous sediments redeposited
-by recent glaciation.
-T}
-```
+  caption: [adapted from @Cherry[p. 44]],
+  ```tbl-example
+  Cf(I)       S               S
+  C           Cw(1in)         Cw(1in)
+  Ltp(9)      Ltp(9)          Ltp(9).
+  New York Area Rocks
+  Era        |Formation      |Age (years)
+  Precambrian|Reading Prong  |>1 billion
+  Paleozoic  |Manhattan Prong|400 million
+  Mesozoic   |T{
+    #set text(hyphenate: true, overhang: true)
+    
+    Newark Basin, incl.
+    Stockton, Lockatong, and Brunswick
+    formations; also Watchungs
+    and Palisades.
+  T}                         |200 million
+  Cenozoic   |Coastal Plain  |T{
+    #set text(hyphenate: true, overhang: true)
+    #set par(justify: true)
+    
+    On Long Island 30,000 years;
+    Cretaceous sediments redeposited
+    by recent glaciation.
+  T}
+  ```
 ) <ex-rocks>
 
 #example(
-caption: [adapted from @tbl.7],
-```tbl-example-wide
-le le7 lw(10).
-The fourth line|_|line 1
-of this column|=|line 2
-determines|\_|line 3
-the column width.|T{
-This text is too wide to fit into a column of width 17.
-T}|line 4
-T{
-No break here.
-T}||line 5
-```
+  caption: [adapted from @tbl.7],
+  ```tbl-example-wide
+  Le                Le7 Lw(10).
+  The fourth line  |_  |line 1
+  of this column   |=  |line 2
+  determines       |\_ |line 3
+  the column width.|T{
+    This text is too wide to fit into a column of width 17.
+  T}                   |line 4
+  T{
+    No break here.
+  T}               |   |line 5
+  ```
 ) <ex-lines>
 
 #pagebreak(weak: true)
@@ -1010,25 +1022,25 @@ T}||line 5
 )
 
 #example(
-caption: [adapted from @Cherry[p. 45]],
-```tbl-example
-cb s s s s
-cp(-2) s s s s
-c | c | c | c | c
-c | c | c | c | c
-r2 | n2 | n2 | n2e | nbe.
-Readability of Text
-Line Width and Leading for 10-Point Type
-_
-Line : Set : 1-Point : 2-Point : 4-Point
-Width : Solid : Leading : Leading : Leading
-_
-9 Pica : 93 : --6.0 : --5.3 : --7.1
-14 Pica : 450 : --0.6 : --0.3 : --1.7
-19 Pica : 5 : --5.1 : 0.0 : --2.0
-31 Pica : 3 : --3.8 : --2.4 : --3.6
-43 Pica : 5.1 : --90000.000 : --5.9 : --8.8
-```
+  caption: [adapted from @Cherry[p. 45]],
+  ```tbl-example
+  C b       S       S         S         S
+  C p(-2)   S       S         S         S
+  C       | C     | C       | C       | C
+  C       | C     | C       | C       | C
+  R 2     | N 2   | N 2     | N 2 e   | N b e.
+  Readability of Text
+  Line Width and Leading for 10-Point Type
+  _
+  Line    : Set   : 1-Point : 2-Point : 4-Point
+  Width   : Solid : Leading : Leading : Leading
+  _
+  9 Pica  : 93    : --6.0   : --5.3   : --7.1
+  14 Pica : 450   : --0.6   : --0.3   : --1.7
+  19 Pica : 5     : --5.1   : 0.0     : --2.0
+  31 Pica : 3     : --3.8   : --2.4   : --3.6
+  43 Pica : 5.1   : --90.00 : --5.9   : --8.8
+  ```
 ) <ex-read>
 
 = References
