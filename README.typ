@@ -64,7 +64,7 @@
     breakable: false,
     inset:
       if it.level == 1 { (bottom: 10pt) }
-      else { (:) },
+      else { 0pt },
     stroke:
       if it.level == 1 { (bottom: 1pt) }
       else { none },
