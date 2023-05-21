@@ -583,6 +583,10 @@ Each input line following the terminating `.` of the
 #link(<specs>)[format specifications] creates a new row of data in the
 table, with each cell separated by the #link-label(`tab`) string.
 
+If a row provides fewer entries than there are columns in the table at
+that point, then the remaining columns are assumed to be empty. It is an
+error to provide more entries in a row than there are columns.
+
 == Special input lines
 Some input lines do not represent table rows at all:
 
@@ -628,7 +632,6 @@ Any leading or trailing spaces or tabs within a table entry (so long as
 improve legibility, but note that making the input look pretty is *not*
 a requirement: see @ex-align.
 
-#pagebreak(weak: true)
 There are a few important caveats:
 
 - The `eval` function does not have access to anything other than the
