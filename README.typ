@@ -369,9 +369,42 @@ the table. The classifier may be followed by any number of
 #link(<mods>)[_column modifiers_], some of which may have required
 arguments enclosed in parentheses.
 
+The total number of columns in the table is determined by the row
+definition with the largest number of columns specified. Any row
+definitions that have fewer columns than this maximum are assumed to
+have however many #link-label(`L`) columns at the end to complete the
+row.
+
+The last row definition in the format specifications determines the
+layout of that row and all rows for the rest of the table.
+
+Spaces and tabs between any column classifiers or column modifiers are
+ignored. Column classifier letters and column modifier letters can be
+given as either uppercase (preferred for column classifiers) or
+lowercase (preferred for column modifiers).
+
+For example:
+
+```
+L Rb
+Cr n I.
+```
+
+This specifies:
+
+- Row 1:
+  - Column 1 is left-aligned (#link-label(`L`))
+  - Column 2 is right-aligned (#link-label(`R`)) and bold
+    (#link-label(`b`))
+  - Column 3 is not specified, but will be assumed to be left-aligned
+- Row 2 (*and all subsequent rows*):
+  - Column 1 is centered (#link-label(`C`))
+  - Column 2 is right-aligned (#link-label(`R`)[`r`])
+  - Column 3 is numerically-aligned (#link-label(`N`)[`n`]) and italic
+    (#link-label(`i`)[`I`])
+
 == Column classifiers <classes>
-The following column classifiers are recognized. They may be given as
-either capital or lowercase.
+The following column classifiers are recognized:
 
 / *`L`*: #strong[L]eft align.
 
@@ -437,8 +470,7 @@ either capital or lowercase.
   @ex-stack[].]
 
 == Column modifiers <mods>
-The following column modifiers are recognized. They may be given as
-either capital or lowercase.
+The following column modifiers are recognized:
 
 / *`b`*: #strong[B]old text using the Typst `strong` element function.
 
