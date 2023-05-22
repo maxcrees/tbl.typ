@@ -16,6 +16,22 @@
   "\\^",
 )
 
+#let units = (
+  // Typst units and aliases
+  "pt": ("p",),
+  "mm": (),
+  "cm": ("c",),
+  "in": ("i",),
+  "em": ("m",),
+
+  // troff-only units
+  "en": ("n",),
+  "P": (),
+  "M": (),
+)
+
+#let width-default = (min: 0pt, max: 0pt, num-l: 0pt, num-r: 0pt)
+
 #let options-default = (
   // troff tbl
   box: false,
@@ -92,20 +108,6 @@
     },
   )
 }
-
-#let units = (
-  // Typst units and aliases
-  "pt": ("p",),
-  "mm": (),
-  "cm": ("c",),
-  "in": ("i",),
-  "em": ("m",),
-
-  // troff-only units
-  "en": ("n",),
-  "P": (),
-  "M": (),
-)
 
 #let coerce-unit(len, default, relative: none) = {
   let given-unit = none
@@ -243,13 +245,11 @@
     // Array of rows, each containing an array of content cells
     let rows = ()
 
-    // Named parameter "columns:" for tablex. This will be an array of
-    // final column widths.
-    //
-    // * Modifier "e": realized into fixed width. "equalize" placeholder.
-    // * Modifier "w": realized into fixed with. Can be combined with "e".
-    // * Modifier "x": 1fr.
-    // * Otherwise: auto.
+    // Named parameter "columns:" for tablex. Mostly used to track how
+    // many columns are in the table, and which have modifier "e"
+    // ("equalize") or "x" (1fr). The rest are auto, but will be
+    // replaced by real lengths before tablex is called; see
+    // "final-widths" below.
     let cols = ()
 
     // Manually specified vertical and horizontal lines. These are
@@ -263,12 +263,14 @@
     // Largest width of any cell in any column that has been modified "e".
     let equalize-width = state("tbl-equalize-width")
     equalize-width.update(0pt)
-    // Largest width of any cell with class "N" in a given column #.
-    // Dictionary of column # -> (left, right) widths wrt. separator.
-    let numeric-widths = state("tbl-numeric-widths")
-    numeric-widths.update((:))
-    // Dictionary of column # -> widths from modifier "w".
-    let minimum-widths = (:)
+    // Dictionary of column # -> dictionary:
+    //   min:   as specified by modifier "w", EXCLUDING padding
+    //   max:   maximum from all cells in this column, INCLUDING padding
+    //   num-l: maximum from all left halves of class "N" cells in this
+    //          column, EXCLUDING padding
+    //   num-r: same as above, but right halves
+    let final-widths = state("tbl-final-widths")
+    final-widths.update((:))
     // Maximum possible width of the current table, based on the
     // container we're in - or the width of the page minus the margins
     // if there is no container.
@@ -404,6 +406,8 @@
           }
         }
 
+        let my-min-width = none
+
         for mod in modstring.clusters() {
           assert-ctx(
             mod in " bdefimoptuvwxz".clusters(),
@@ -492,12 +496,7 @@
             )
 
           } else if mod == "w" {
-            let my-min-width = minimum-widths.at(str(j), default: 0em)
-
-            minimum-widths.insert(str(j), calc.max(
-              my-min-width,
-              coerce-unit(args.w.remove(0), "en"),
-            ))
+            my-min-width = coerce-unit(args.w.remove(0), "en")
 
           } else if mod == "x" {
             cols.at(j) = 1fr
@@ -506,6 +505,20 @@
             spec.ignore = true
 
           }
+        }
+
+        if my-min-width != none {
+          tbl-cell(spec, styles => {
+            final-widths.update(d => {
+              let e = d.at(str(j), default: width-default)
+              let w = pt-length(my-min-width, styles)
+              let v = w + pt-length(spec.pad.left + spec.pad.right, styles)
+              e.min = calc.max(e.min, w)
+              e.max = calc.max(e.max, v)
+              d.insert(str(j), e)
+              d
+            })
+          })
         }
 
         new-rowdef.push(spec)
@@ -609,7 +622,7 @@
         col = col.replace("\\&", "")
 
         let spec = rowdef.at(j)
-        let tbl-n = ()
+        let tbl-n = none
 
         col = tbl-cell(spec, {
           let align-pos = none
@@ -696,22 +709,12 @@
           }
         })
 
-        if spec.ignore {
-          // Preserve height, but ignore width.
-          col = tbl-cell(spec, styles => {
-            box(
-              width: 0pt,
-              height: measure(col, styles).height,
-              place(spec.halign + spec.valign, col)
-            )
-          })
-        }
-
         if text-block {
-          if str(j) in minimum-widths {
-            col = box(width: minimum-widths.at(str(j)), col)
-          } else {
-            col = {
+          col = locate(loc => {
+            let w = final-widths.at(loc).at(str(j), default: width-default)
+            if w.min != 0pt {
+              box(width: w.min, col)
+            } else {
               let spanned-cols = 1
               for next-spec in rowdef.slice(j + 1) {
                 if next-spec.class == "S" {
@@ -727,17 +730,42 @@
 
               box(width: width, col)
             }
-          }
+          })
         }
 
-        if cols.at(j) == "equalize" and not spec.ignore {
+        let next-spec = rowdef.at(j + 1, default: (class: none))
+        if spec.ignore {
+          // Preserve height, but ignore width.
+          col = tbl-cell(spec, styles => {
+            box(
+              width: 0pt,
+              height: measure(col, styles).height,
+              place(spec.halign + spec.valign, col)
+            )
+          })
+        } else if next-spec.class != "S" {
           tbl-cell(spec, styles => {
-            equalize-width.update(w => {
-              let v = measure(col, styles).width
-              v += pt-length(spec.pad.left, styles)
-              v += pt-length(spec.pad.right, styles)
+            let v = measure(col, styles).width
+            v += pt-length(spec.pad.left, styles)
+            v += pt-length(spec.pad.right, styles)
+            if cols.at(j) == "equalize" {
+              equalize-width.update(w => calc.max(w, v))
+            }
+            final-widths.update(d => {
+              let e = d.at(str(j), default: width-default)
+              e.max = calc.max(e.max, v)
 
-              calc.max(w, v)
+              if tbl-n != none {
+                let (cell-left, _, cell-right) = tbl-n
+                cell-left = measure(cell-left, styles).width
+                cell-right = measure(cell-right, styles).width
+
+                e.num-l = calc.max(e.num-l, cell-left)
+                e.num-r = calc.max(e.num-r, cell-right)
+              }
+
+              d.insert(str(j), e)
+              d
             })
           })
         }
@@ -826,29 +854,8 @@
             pad(..spec.pad, col),
           )
 
-          if tbl-n != () {
+          if tbl-n != none {
             col.tbl-n = tbl-n
-
-            tbl-cell(spec, styles => {
-              let (cell-left, _, cell-right) = col.tbl-n
-              cell-left = measure(cell-left, styles).width
-              cell-right = measure(cell-right, styles).width
-
-              numeric-widths.update(d => {
-                let curr-max = d.at(str(j), default: (0pt, 0pt))
-                if not spec.ignore {
-                  d.insert(
-                    str(j),
-                    (
-                      calc.max(curr-max.first(), cell-left),
-                      calc.max(curr-max.last(), cell-right),
-                    ),
-                  )
-                }
-
-                d
-              })
-            })
           }
         }
 
@@ -896,21 +903,15 @@
               if type(col) == "dictionary" and "tbl-n" in col {
                 col.content = tbl-cell(spec, {
                   let (cell-left, sep, cell-right) = col.tbl-n
-                  let (max-left, max-right) = numeric-widths.at(loc).at(str(j))
+                  let w = final-widths.at(loc).at(str(j), default: width-default)
 
                   pad(
                     ..spec.pad,
                     stack(
                       dir: ltr,
-                      box(
-                        width: max-left,
-                        align(right, cell-left),
-                      ),
+                      box(width: w.num-l, align(right, cell-left)),
                       sep,
-                      box(
-                        width: max-right,
-                        align(left, cell-right),
-                      ),
+                      box(width: w.num-r, align(left, cell-right)),
                     )
                   )
                 })
@@ -921,9 +922,12 @@
           })
 
           tablex.tablex(
-            columns: cols.map(c => {
+            columns: cols.enumerate().map(c => {
+              let (j, c) = c
               if c == "equalize" {
                 equalize-width.at(loc)
+              } else if c == auto {
+                final-widths.at(loc).at(str(j), default: (max: auto)).max
               } else {
                 c
               }

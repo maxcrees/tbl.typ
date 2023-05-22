@@ -766,11 +766,6 @@ is the total number of columns in the table.
 
   - `||` (double vertical line)
 
-- The #link-label(`w(...)`) (minimum #strong[w]idth) column modifier
-  currently only sets the width of text blocks; it does not yet affect
-  other table cells.
-  (#issue(5))
-
 - The #link-label(`x`) (e#strong[x]pand) column modifier does not
   currently constrain the width of text blocks like it should.
 
