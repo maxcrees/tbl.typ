@@ -755,10 +755,6 @@ is the total number of columns in the table.
   - `nospaces`
   - `nowarn`
 
-- The #link-label(`pad`) region option currently requires the `left` and
-  `right` keys to be explicitly provided. Unexpected behavior may occur
-  if `x` is provided as a key. (#issue(3))
-
 - The following #link(<classes>)[column classifiers] are not currently
   supported:
 

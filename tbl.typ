@@ -44,12 +44,7 @@
   breakable: false,
   leading: 0.65em,
   macros: (:),
-  pad: (
-    left: 0.75em,
-    right: 0.75em,
-    top: 3pt,
-    bottom: 3pt,
-  ),
+  pad: (x: 0.75em, y: 3pt),
   tbl-align: left,
 
   // tablex.typ
@@ -228,6 +223,22 @@
         } else {
           panic("Invalid options-alias type", type(mapping))
         }
+      } else if name == "pad" {
+        let rest = value.at("rest", default: none)
+        for (axis, dirs) in (x: ("left", "right"), y: ("top", "bottom")) {
+          let given-axis = value.at(axis, default: none)
+          for dir in dirs {
+            if dir not in value {
+              value.insert(
+                dir,
+                if given-axis != none { given-axis }
+                else if rest != none { rest }
+                else { options-default.pad.at(axis) },
+              )
+            }
+          }
+        }
+        options.insert("pad", value)
       } else if name not in options-default {
         panic("Unknown region option '" + name + "'")
       }
