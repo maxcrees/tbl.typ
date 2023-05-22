@@ -58,7 +58,6 @@
   class: "L",
 
   bold: false,
-  equalize: false,
   fill: auto,
   font: options.font,
   halign: left,
@@ -263,7 +262,7 @@
 
     // Largest width of any cell in any column that has been modified "e".
     let equalize-width = state("tbl-equalize-width")
-    equalize-width.update(0em)
+    equalize-width.update(0pt)
     // Largest width of any cell with class "N" in a given column #.
     // Dictionary of column # -> (left, right) widths wrt. separator.
     let numeric-widths = state("tbl-numeric-widths")
@@ -273,8 +272,7 @@
     // Maximum possible width of the current table, based on the
     // container we're in - or the width of the page minus the margins
     // if there is no container.
-    let tbl-max-width = state("tbl-max-width")
-    tbl-max-width.update(size.width)
+    let tbl-max-width = size.width
 
     ////////////////// TABLE FORMAT / LAYOUT PARSING //////////////////
     // Strip out any column modifier arguments first, since they may
@@ -414,16 +412,13 @@
             col: j,
           )
 
-          for mod-needs-arg in "fmopvw".clusters() {
-            if mod == mod-needs-arg {
-              assert-ctx(
-                mod in args,
-                "Missing argument for column modifier '" + mod + "'",
-                row: i,
-                col: j,
-              )
-              break
-            }
+          if mod in "fmopvw".clusters() {
+            assert-ctx(
+              mod in args,
+              "Missing argument for column modifier '" + mod + "'",
+              row: i,
+              col: j,
+            )
           }
 
           if mod == " " {
@@ -497,14 +492,12 @@
             )
 
           } else if mod == "w" {
-            if str(j) not in minimum-widths {
-              minimum-widths.insert(str(j), 0em)
-            }
+            let my-min-width = minimum-widths.at(str(j), default: 0em)
 
-            minimum-widths.at(str(j)) = calc.max(
-              minimum-widths.at(str(j)),
+            minimum-widths.insert(str(j), calc.max(
+              my-min-width,
               coerce-unit(args.w.remove(0), "en"),
-            )
+            ))
 
           } else if mod == "x" {
             cols.at(j) = 1fr
@@ -523,7 +516,7 @@
     }
 
     specs = specs.map(rowdef => {
-      let missing = calc.max(..specs.map(r => r.len())) - rowdef.len()
+      let missing = cols.len() - rowdef.len()
       if missing > 0 {
         rowdef += (spec-default(options),) * missing
       }
@@ -587,9 +580,7 @@
       let missing = rowdef.len() - row.len()
       if missing > 0 {
         // Add empty columns if fewer than expected are provided
-        for i in range(missing) {
-          row.push("")
-        }
+        row += ("",) * missing
       } else if missing < 0 {
         panic("Too many columns")
       }
@@ -720,10 +711,8 @@
           if str(j) in minimum-widths {
             col = box(width: minimum-widths.at(str(j)), col)
           } else {
-            col = locate(loc => {
-              let width = tbl-max-width.at(loc)
+            col = {
               let spanned-cols = 1
-
               for next-spec in rowdef.slice(j + 1) {
                 if next-spec.class == "S" {
                   spanned-cols += 1
@@ -732,18 +721,18 @@
                 }
               }
 
+              let width = tbl-max-width
               width *= spanned-cols
               width /= cols.len() + 1
 
               box(width: width, col)
-            })
+            }
           }
         }
 
         if cols.at(j) == "equalize" and not spec.ignore {
           tbl-cell(spec, styles => {
             equalize-width.update(w => {
-              w = pt-length(w, styles)
               let v = measure(col, styles).width
               v += pt-length(spec.pad.left, styles)
               v += pt-length(spec.pad.right, styles)
@@ -846,18 +835,13 @@
               cell-right = measure(cell-right, styles).width
 
               numeric-widths.update(d => {
-                if str(j) not in d {
-                  d.insert(str(j), (0em, 0em))
-                }
-
-                let (max-left, max-right) = d.at(str(j))
-
+                let curr-max = d.at(str(j), default: (0pt, 0pt))
                 if not spec.ignore {
                   d.insert(
                     str(j),
                     (
-                      calc.max(max-left, cell-left),
-                      calc.max(max-right, cell-right),
+                      calc.max(curr-max.first(), cell-left),
+                      calc.max(curr-max.last(), cell-right),
                     ),
                   )
                 }
