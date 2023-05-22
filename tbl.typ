@@ -166,7 +166,7 @@
 
 #let tbl-cell(spec, it) = {
   if type(it) == "function" {
-    style(styles => tbl-cell(spec, it(styles)))
+    tbl-cell(spec, style(styles => it(styles)))
 
   } else {
     set text(

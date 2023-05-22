@@ -766,11 +766,6 @@ is the total number of columns in the table.
 
   - `||` (double vertical line)
 
-- You may need to apply the #link-label(`e`) column modifier to one or
-  more of the rightmost columns in order to minimize their width. This
-  appears to be a more fundamental issue with Typst or `tablex` at the
-  moment.
-
 - The #link-label(`w(...)`) (minimum #strong[w]idth) column modifier
   currently only sets the width of text blocks; it does not yet affect
   other table cells.
@@ -828,7 +823,7 @@ is the total number of columns in the table.
   caption: [adapted from @Cherry[p. 41]],
   ```tbl-example-wide
           C                C                   C
-          L                L                   Ne.
+          L                L                   N.
   Fact            |Location            |Statistic
   Largest state   |Alaska              |591,004 sq. mi.
   Smallest state  |Rhode Island        |1,212 sq. mi.
@@ -860,7 +855,7 @@ is the total number of columns in the table.
   C              | C       S   S
   C              | C     | C | C
   C              | C     | C | C
-  L              | N     |N e|N e.
+  L              | N     | N | N.
   Composition of Foods
   _
   Food           |Percent by Weight
@@ -882,7 +877,7 @@ is the total number of columns in the table.
   ```tbl-example
   C                  S                S
   C                | C              | C
-  L                | L              | Ne.
+  L                | L              | N.
   Major New York Bridges
   _
   Bridge           |Designer        |Length
@@ -981,7 +976,7 @@ is the total number of columns in the table.
   ```tbl-example
   C    S      S
   C    C      C
-  N    N      N e.
+  N    N      N.
   AT&T Common Stock
   Year|Price |Dividend
   1984|15-20 |\$1.20
@@ -1063,7 +1058,7 @@ is the total number of columns in the table.
   C p(-2)   S       S         S         S
   C       | C     | C       | C       | C
   C       | C     | C       | C       | C
-  R 2     | N 2   | N 2     | N 2 e   | N b e.
+  R 2     | N 2   | N 2     | N 2     | N b.
   Readability of Text
   Line Width and Leading for 10-Point Type
   _
