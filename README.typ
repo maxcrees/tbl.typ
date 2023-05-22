@@ -1077,7 +1077,7 @@ is the total number of columns in the table.
 ) <ex-read>
 
 #show: template.with(
-  tab: " | ",
+  tab: "|",
   pad: (bottom: 4pt),
   mode: "math",
   stroke: 0.1pt,
