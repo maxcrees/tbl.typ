@@ -329,11 +329,20 @@ The following options are recognized:
 
   _Default:_ `(:)`
 
+/ *`mode`*:
+
+  - `"content"`: all table cells are evaluated as `[content blocks]`.
+  - `"math"`: all table cells are evaluated as `$inline equations$`.
+
+  _Default:_ `"content"` \
+  #emph[cf. @ex-butcher.]
+
 / *`pad`*: This is the padding used for each cell, for use with the
   Typst `pad` element function. The `left` and `right` keys can be
   overridden using a #link-label("Number")[numeric column modifier].
 
-  _Default:_ `(left: 0.75em, right: 0.75em, top: 3pt, bottom: 3pt)`
+  _Default:_ `(x: 0.75em, y: 3pt)` \
+  #emph[cf. @ex-butcher.]
 
 / *`repeat-header`*: If #link-label(`breakable`) is `true` and this
   option is `true`, then the table header controlled by
@@ -344,7 +353,8 @@ The following options are recognized:
 
 / *`stroke`*, \ `linesize`: How to draw all lines in the table.
 
-  _Default:_ `1pt`
+  _Default:_ `1pt` \
+  #emph[cf. @ex-butcher.]
 
 / *`tab`*: The string delimiter that separates different cells within a
   given row of the table data.
@@ -594,7 +604,8 @@ Some input lines do not represent table rows at all:
   that position in the table. This is only useful if
   #link-label(`auto-lines`) is `false`.
 
-  #emph[cf. @ex-software, @ex-food[], @ex-bridges[], @ex-read[].]
+  #emph[cf. @ex-software, @ex-food[], @ex-bridges[], @ex-read[],
+  @ex-butcher[].]
 
   Similarly, `=` (equals sign) in #troff would draw a double horizontal
   line, but this is not currently supported.
@@ -623,8 +634,9 @@ Some input lines do not represent table rows at all:
 
 == Table entries
 The string representing the cell content is called the _table entry_.
-For the most part, this is simply passed to the Typst `eval` function,
-so you can use Typst markup within a table entry.
+Each table entry is evaluated by the Typst `eval` function. By default,
+they will be evaluated as Typst markup, but you can change the
+#link-label(`mode`) region option to evaluate them as equations instead.
 
 Any leading or trailing spaces or tabs within a table entry (so long as
 #link-label(`tab`) is neither) are ignored. The
@@ -1063,6 +1075,27 @@ is the total number of columns in the table.
   43 Pica : 5.1   : --90.00 : --5.9   : --8.8
   ```
 ) <ex-read>
+
+#show: template.with(
+  tab: " | ",
+  pad: (bottom: 4pt),
+  mode: "math",
+  stroke: 0.1pt,
+)
+
+#example(
+  caption: [adapted from
+  #link("https://discord.com/channels/1054443721975922748/1088371919725793360/1110118908616249435")[Discord]],
+  ```tbl-example
+  c      | c         c         c           c.
+  c_1    | a_(11)  | a_(12)  | dots.h    | a_(1 s)
+  c_2    | a_(21)  | a_(22)  | dots.h    | a_(2 s)
+  dots.v | dots.v  | dots.v  | dots.down | dots.v
+  c_s    | a_(s 1) | a_(s 2) | dots.h    | a_(s s)
+  _
+         | b_1     | b_2     | dots.h    | b_s
+  ```
+) <ex-butcher>
 
 = References
 #bibliography(

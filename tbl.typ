@@ -8,6 +8,11 @@
 // http://mozilla.org/MPL/2.0/.
 #import "tablex.typ"
 
+#let modes = (
+  content: ("[", "]"),
+  math: ("$", "$"),
+)
+
 #let special-entries = (
   "_",
   "=",
@@ -44,6 +49,7 @@
   breakable: false,
   leading: 0.65em,
   macros: (:),
+  mode: "content",
   pad: (x: 0.75em, y: 3pt),
   tbl-align: left,
 
@@ -636,6 +642,7 @@
         let tbl-n = none
 
         col = tbl-cell(spec, {
+          let (cell-open, cell-close) = modes.at(options.mode)
           let align-pos = none
           let sep = []
           let n = 0
@@ -699,8 +706,8 @@
               h(w)
             })
 
-            let cell-left = eval("[" + txt-left.trim() + "]")
-            let cell-right = eval("[" + txt-right.trim() + "]")
+            let cell-left = eval(cell-open + txt-left.trim() + cell-close)
+            let cell-right = eval(cell-open + txt-right.trim() + cell-close)
 
             // Spacing adjustments
             if txt-left.ends-with(regex-raw(`[^ \t][ \t]`)) {
@@ -716,7 +723,7 @@
             stack(dir: ltr, ..tbl-n)
 
           } else {
-            eval("[" + col + "]")
+            eval(cell-open + col + cell-close)
           }
         })
 
