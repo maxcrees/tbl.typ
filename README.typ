@@ -57,9 +57,6 @@
 #show heading: it => {
   set text(size: calc.max(1.4em - 0.2em * (it.level - 1), 1em))
 
-  if it.level == 1 {
-    pagebreak(weak: true)
-  }
   block(
     breakable: false,
     inset:
@@ -215,9 +212,11 @@
   ]
 
   v(1fr)
+  pagebreak(weak: true)
   outline(indent: true)
 }
 
+#pagebreak(weak: true)
 = Introduction <intro>
 Typst @Typst is "a new markup-based typesetting system that is powerful
 and easy to learn." While Typst provides a built-in `table()` function,
@@ -258,6 +257,7 @@ The two main components of this syntax are:
   separated by the #link-label(`tab`) option which defaults to a
   #smallcaps[tab] character.
 
+#pagebreak(weak: true)
 = Region options <options>
 In addition to the overall #link(<intro>)[table syntax] itself, you may
 specify _region options_ that control the parsing and styling of the
@@ -389,9 +389,7 @@ layout of that row and all rows for the rest of the table.
 Spaces and tabs between any column classifiers or column modifiers are
 ignored. Column classifier letters and column modifier letters can be
 given as either uppercase (preferred for column classifiers) or
-lowercase (preferred for column modifiers).
-
-For example:
+lowercase (preferred for column modifiers). For example:
 
 ```
 L Rb
@@ -661,6 +659,7 @@ There are a few important caveats:
   (backslash-ampersand; known as the _non-printing input token_) in the
   table entry are removed.
 
+#pagebreak(weak: true)
 == Special table entries
 If a table entry consists of any of the following strings alone
 (ignoring any spaces or tabs), then they gain a special meaning:
@@ -692,7 +691,6 @@ If a table entry consists of any of the following strings alone
 
     #emph[cf. @ex-food.]
 
-#pagebreak(weak: true)
 == Text blocks
 A table entry can also span multiple input lines by writing it as a
 _text block._ #label("text block") This consists of beginning the entry
@@ -718,6 +716,7 @@ is the total number of columns in the table.
 
 #emph[cf. @ex-rocks, @ex-lines[].]
 
+#pagebreak(weak: true)
 = Differences from traditional `tbl` <diff>
 
 - #link(<options>)[Region options] must be specified using a
@@ -760,6 +759,7 @@ is the total number of columns in the table.
   a fully-functioning #link-label(`w(...)`) column modifier (see
   #link(<issues>)[Known issues]).
 
+#pagebreak(weak: true)
 = Known issues <issues>
 
 - The following #link(<options>)[region options] are not currently
@@ -788,6 +788,7 @@ is the total number of columns in the table.
 - A table data row consisting of only `=` (double horizontal line) is
   not currently supported.
 
+#pagebreak(weak: true)
 = Examples <examples>
 
 #let template = (..args, it) => {
@@ -1100,6 +1101,7 @@ is the total number of columns in the table.
   ```
 ) <ex-butcher>
 
+#pagebreak(weak: true)
 = References
 #bibliography(
   "README.yml",
