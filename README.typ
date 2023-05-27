@@ -168,11 +168,11 @@
     )
   } else if it.lang.starts-with("tbl-example") {
     let dir = ltr
-    let sep = (1fr, 1fr)
+    let inset = 0pt
     let width = 50%
     if it.lang.ends-with("-wide") {
       dir = ttb
-      sep = (1em, 1em)
+      inset = (y: 1em)
       width = 100%
     }
 
@@ -189,9 +189,7 @@
           align(left, "```tbl\n" + it.text + "\n```"),
         )
       },
-      sep.first(),
-      align(horizon, raw(lang: "tbl", it.text)),
-      sep.last(),
+      align(horizon, block(inset: inset, width: width, raw(lang: "tbl", it.text))),
     ))
   } else {
     it
@@ -800,6 +798,7 @@ is the total number of columns in the table.
   ]
   tbl.template(
     font: font,
+    center: true,
     ..args,
     it,
   )
