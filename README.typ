@@ -762,7 +762,6 @@ is the total number of columns in the table.
 
   - `delim` (#issue(1))
   - `expand` (#issue(2))
-  - `nospaces`
   - `nowarn`
 
 - The following #link(<classes>)[column classifiers] are not currently
