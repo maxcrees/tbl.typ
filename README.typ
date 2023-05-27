@@ -777,6 +777,7 @@ is the total number of columns in the table.
 
 - The #link-label(`x`) (e#strong[x]pand) column modifier does not
   currently constrain the width of text blocks like it should.
+  (#issue(7))
 
 - `.T&` in the #link(<data>)[table data] is not currently supported.
   (#issue(4))
