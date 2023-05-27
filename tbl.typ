@@ -22,12 +22,12 @@
   tab: "\t",
 
   // tbl.typ
+  align: left,
   breakable: false,
   leading: 0.65em,
   macros: (:),
   mode: "content",
   pad: (x: 0.75em, y: 3pt),
-  tbl-align: left,
 
   // tablex.typ
   auto-lines: false,
@@ -38,8 +38,8 @@
 
 #let OPTIONS-ALIAS = (
   allbox: "auto-lines",
-  center: (tbl-align: center),
-  centre: (tbl-align: center),
+  center: (align: center),
+  centre: (align: center),
   doubleframe: "doublebox",
   frame: "box",
   linesize: "stroke",
@@ -907,7 +907,7 @@
 
   //////////////////////// TABLE REALIZATION ////////////////////////
   align(
-    options.tbl-align,
+    options.align,
 
     block(
       breakable: options.breakable,

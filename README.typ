@@ -273,6 +273,10 @@ would like to control. For example:
 
 The following options are recognized:
 
+/ *`align`*: How to align the table as a whole.
+
+  _Default:_ `left`
+
 / *`auto-lines`*, \ `allbox`: Like #link-label(`box`), but also draw a
   line between every cell if `true`. This is the same option from
   `tablex`.
@@ -291,8 +295,8 @@ The following options are recognized:
 
   _Default:_ `false`
 
-/ *`center`*, \ `centre`: Aliases for a #link-label(`tbl-align`) value
-  of `center`.
+/ *`center`*, \ `centre`: Aliases for a #link-label(`align`) value of
+  `center`.
 
 / *`decimalpoint`*: The string used to separate the integral part of a
   number from the fractional part. Used in #link-label(`N`)-classified
@@ -361,10 +365,6 @@ The following options are recognized:
   #emph[cf. @ex-read. Most tables in this document use `"|"` (a vertical
   bar) for readability purposes, though this should not be confused with
   #link-label(`|`)[the column classifier of the same name].]
-
-/ *`tbl-align`*: How to align the table as a whole.
-
-  _Default:_ `left`
 
 = Format specifications <specs>
 The format specifications section controls the layout and style of cells
