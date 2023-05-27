@@ -8,42 +8,12 @@
 // http://mozilla.org/MPL/2.0/.
 #import "tablex.typ"
 
-#let modes = (
+#let CELL-MODES = (
   content: ("[", "]"),
   math: ("$", "$"),
 )
 
-#let special-entries = (
-  "_",
-  "=",
-  "\\_",
-  "\\=",
-  "\\^",
-)
-
-#let units = (
-  // Typst units and aliases
-  "pt": ("p",),
-  "mm": (),
-  "cm": ("c",),
-  "in": ("i",),
-  "em": ("m",),
-
-  // troff-only units
-  "en": ("n",),
-  "P": (),
-  "M": (),
-)
-
-#let width-default = (
-  min: 0pt,
-  max: 0pt,
-  num-l: 0pt,
-  num-r: 0pt,
-  alpha: 0pt,
-)
-
-#let options-default = (
+#let OPTIONS-DEFAULT = (
   // troff tbl
   box: false,
   decimalpoint: ".",
@@ -66,7 +36,7 @@
   stroke: 1pt,
 )
 
-#let options-alias = (
+#let OPTIONS-ALIAS = (
   allbox: "auto-lines",
   center: (tbl-align: center),
   centre: (tbl-align: center),
@@ -77,7 +47,7 @@
 )
 
 // "Column descriptors"
-#let spec-default(options) = {(
+#let SPEC-DEFAULT(options) = {(
   class: "L",
 
   bold: false,
@@ -95,6 +65,36 @@
   stagger: false,
   valign: horizon,
 )}
+
+#let SPECIAL-ENTRIES = (
+  "_",
+  "=",
+  "\\_",
+  "\\=",
+  "\\^",
+)
+
+#let UNITS = (
+  // Typst units and aliases
+  "pt": ("p",),
+  "mm": (),
+  "cm": ("c",),
+  "in": ("i",),
+  "em": ("m",),
+
+  // troff-only units
+  "en": ("n",),
+  "P": (),
+  "M": (),
+)
+
+#let WIDTH-DEFAULT = (
+  min: 0pt,
+  max: 0pt,
+  num-l: 0pt,
+  num-r: 0pt,
+  alpha: 0pt,
+)
 
 #let assert-ctx(cond, message, row: none, col: none) = {
   assert(
@@ -118,6 +118,18 @@
   )
 }
 
+#let cell-width-at(cell-widths, key, loc: none, spec: none) = {
+  let cell-widths = cell-widths
+  let key = str(key)
+  if spec != none and spec.colspan > 1{
+    key += "," + str(spec.colspan)
+  }
+  if loc != none {
+    cell-widths = cell-widths.at(loc)
+  }
+  (key, cell-widths.at(key, default: WIDTH-DEFAULT))
+}
+
 #let coerce-unit(len, default, relative: none) = {
   let given-unit = none
 
@@ -127,7 +139,7 @@
     }
   }
 
-  for (primary-unit, aliases) in units.pairs() {
+  for (primary-unit, aliases) in UNITS.pairs() {
     for unit in (primary-unit, ..aliases) {
       if len.ends-with(unit) {
         given-unit = primary-unit
@@ -206,831 +218,820 @@
   }
 }
 
-#let template(body, ..options-given) = {
-  show raw.where(lang: "tbl"): it => layout(size => {
-    let raw-text = it.text.replace("\r", "")
+#let tbl(txt, ..options) = layout(size => {
+  let txt = txt.replace("\r", "")
 
-    // A single period separates the "table data" from the "table format
-    // specifications".
-    let period = raw-text.position(regex-raw(`[.][ \t]*\n`))
-    assert-ctx(
-      period != none,
-      "Missing table format specification: expected '.'",
-    )
+  // A single period separates the "table data" from the "table format
+  // specifications".
+  let period = txt.position(regex-raw(`[.][ \t]*\n`))
+  assert-ctx(
+    period != none,
+    "Missing table format specification: expected '.'",
+  )
 
-    ////////////////////// TABLE OPTION PARSING //////////////////////
-    let options = options-given.named()
-    for (name, value) in options-default.pairs() {
-      if name not in options {
-        options.insert(name, value)
-      }
+  ////////////////////// TABLE OPTION PARSING //////////////////////
+  let options = options.named()
+  for (name, value) in OPTIONS-DEFAULT.pairs() {
+    if name not in options {
+      options.insert(name, value)
     }
-    for (name, value) in options.pairs() {
-      if name in options-alias {
-        let mapping = options-alias.at(name)
-        if type(mapping) == "dictionary" {
-          options += mapping
-          let _ = options.remove(name)
-        } else if type(mapping) == "string" {
-          options.insert(mapping, value)
-          let _ = options.remove(name)
-        } else {
-          panic("Invalid options-alias type", type(mapping))
-        }
-      } else if name == "pad" {
-        let rest = value.at("rest", default: none)
-        for (axis, dirs) in (x: ("left", "right"), y: ("top", "bottom")) {
-          let given-axis = value.at(axis, default: none)
-          for dir in dirs {
-            if dir not in value {
-              value.insert(
-                dir,
-                if given-axis != none { given-axis }
-                else if rest != none { rest }
-                else { options-default.pad.at(axis) },
-              )
-            }
-          }
-        }
-        options.insert("pad", value)
-      } else if name not in options-default {
-        panic("Unknown region option '" + name + "'")
-      }
-    }
-    if options.doublebox { options.box = true }
-
-    // "Table format specifications"
-    let specstring = raw-text.slice(0, period).trim()
-    // Array of rows, each containing dictionaries ("column class" and
-    // "column modifiers")
-    let specs = ()
-
-    // "Table data"
-    let datastring = raw-text.slice(period + 1).trim(" ").trim("\n")
-    // Array of rows, each containing an array of content cells
-    let rows = ()
-
-    // Named parameter "columns:" for tablex. Mostly used to track how
-    // many columns are in the table, and which have modifier "e"
-    // ("equalize") or "x" (1fr). The rest are auto, but will be
-    // replaced by real lengths before tablex is called; see
-    // "cell-widths" below.
-    let cols = ()
-
-    // Manually specified vertical and horizontal lines. These are
-    // arrays of tablex.vlinex and tablex.hlinex. The latter also keeps
-    // track of how many lines of input in the datastring have been
-    // ignored so that we can still properly map each table row into the
-    // correct entry in "specs" above.
-    let vlines = ()
-    let hlines = ()
-
-    // Largest width of any cell in any column that has been modified "e".
-    let equalize-width = state("tbl-equalize-width")
-    equalize-width.update(0pt)
-    // Dictionary of column # -> dictionary:
-    //   min:   as specified by modifier "w", EXCLUDING padding
-    //   max:   maximum from all cells in this column, INCLUDING padding
-    //   num-l: maximum from all left halves of class "N" cells in this
-    //          column, EXCLUDING padding
-    //   num-r: same as above, but right halves
-    //
-    //   column # may be "j,n" in which case it applies to column j iff
-    //   colspan == n
-    let cell-widths = state("tbl-cell-widths")
-    cell-widths.update((:))
-    // Maximum possible width of the current table, based on the
-    // container we're in - or the width of the page minus the margins
-    // if there is no container.
-    let tbl-max-width = size.width
-
-    ////////////////// TABLE FORMAT / LAYOUT PARSING //////////////////
-    // Strip out any column modifier arguments first, since they may
-    // contain spaces, tabs, commas, or any of the classifier
-    // characters.
-    let args = (:)
-    let arg = specstring.match(regex-raw(`(?s)[ \t]*\((.*?)\)`))
-    while arg != none {
-      let modifier = lower(specstring.slice(arg.start - 1, count: 1))
-      if modifier not in args {
-        args.insert(modifier, ())
-      }
-      let argstring = arg.captures.first()
-
-      let num-open-parens = argstring.matches("(").len()
-      let close-parens = specstring.slice(arg.end).matches(")")
-      assert-ctx(
-        num-open-parens <= close-parens.len(),
-        "Expected ')' for column modifier argument",
-      )
-      if num-open-parens > 0 {
-        let old-end = arg.end
-        arg.end += close-parens.at(num-open-parens - 1).end
-        argstring += specstring.slice(old-end, arg.end)
-      }
-
-      args.at(modifier).push(argstring)
-      specstring = specstring.slice(0, arg.start) + specstring.slice(arg.end)
-      arg = specstring.match(regex-raw(`(?s)[ \t]*\((.*?)\)`))
-    }
-
-    specstring = specstring.replace(" ", "")
-    specstring = specstring.replace("\t", "")
-
-    // Strip out column separations next.
-    let seps = ()
-    let sep = specstring.match(regex-raw(`([0-9]+)`))
-    while sep != none {
-      seps.push(sep.captures.first())
-      // Leave a single space as a placeholder for parsing below.
-      specstring = specstring.slice(0, sep.start) + " " + specstring.slice(sep.end)
-      sep = specstring.match(regex-raw(`([0-9]+)`))
-    }
-
-    // "Newlines and commas are special; they apply the descriptors
-    // following them to a subsequent row of the table."
-    specstring = specstring.split(regex-raw(`[,\n]+`)).enumerate()
-    for (i, row) in specstring {
-      let vline-end = if i == specstring.len() - 1 {
-        none
+  }
+  for (name, value) in options.pairs() {
+    if name in OPTIONS-ALIAS {
+      let mapping = OPTIONS-ALIAS.at(name)
+      if type(mapping) == "dictionary" {
+        options += mapping
+        let _ = options.remove(name)
+      } else if type(mapping) == "string" {
+        options.insert(mapping, value)
+        let _ = options.remove(name)
       } else {
-        i + 1
+        panic("Invalid OPTIONS-ALIAS type", type(mapping))
       }
-
-      // Column descriptors are optionally separated by spaces or tabs.
-      // Commas and newlines start a new "row definition" of column
-      // descriptors (see outer loop).
-      row = row.matches(regex-raw(
-        `(?i)`,
-        `([ACLNRS=^_-]|[|]+)`,
-        `([^ACLNRS=|^_-]+)?`,
-      ))
-      let new-vlines = ()
-      let new-rowdef = ()
-
-      let column-sep-given = none
-      for (j, col) in row.enumerate() {
-        let (class, modstring) = col.captures
-
-        let spec = spec-default(options)
-        spec.class = upper(class)
-        if modstring == none { modstring = "" }
-        modstring = lower(modstring)
-
-        j -= new-vlines.len()
-        if spec.class == "S" {
-          spec.origin = j - 1
-          while new-rowdef.at(spec.origin, default: (class: none)).class == "S" {
-            spec.origin -= 1
-          }
-          new-rowdef.at(spec.origin).colspan += 1
-        } else if spec.class == "|" {
-          assert-ctx(
-            modstring == "",
-            "Column modifiers should precede vertical lines",
-            row: i,
-            col: if j == 0 { 0 } else { j - 1 },
-          )
-          new-vlines.push(tablex.vlinex(
-            start: i,
-            end: vline-end,
-            x: j,
-            stroke: options.stroke,
-          ))
-          continue
-        } else if spec.class == "||" {
-          assert-ctx(
-            false,
-            "Double vertical lines are not supported",
-            row: i,
-            col: if j == 0 { 0 } else { j - 1 },
-          )
-        } else if spec.class.starts-with("|") {
-          assert-ctx(
-            false,
-            "Invalid column class: '" + spec.class + "'",
-            row: i,
-            col: if j == 0 { 0 } else { j - 1 },
-          )
-        }
-
-        if j >= cols.len() {
-          cols.push(auto)
-        }
-
-        if column-sep-given != none {
-          spec.pad.left = column-sep-given
-          column-sep-given = none
-        }
-
-        spec.halign = {
-          if spec.class in ("C", "N", "A") {
-            center
-          } else if spec.class == "R" {
-            right
-          } else {
-            left
-          }
-        }
-
-        let my-min-width = none
-
-        for mod in modstring.clusters() {
-          assert-ctx(
-            mod in " bdefimoptuvwxz".clusters(),
-            "Column modifier '" + mod + "' is not supported",
-            row: i,
-            col: j,
-          )
-
-          if mod in "fmopvw".clusters() {
-            assert-ctx(
-              mod in args,
-              "Missing argument for column modifier '" + mod + "'",
-              row: i,
-              col: j,
+    } else if name == "pad" {
+      let rest = value.at("rest", default: none)
+      for (axis, dirs) in (x: ("left", "right"), y: ("top", "bottom")) {
+        let given-axis = value.at(axis, default: none)
+        for dir in dirs {
+          if dir not in value {
+            value.insert(
+              dir,
+              if given-axis != none { given-axis }
+              else if rest != none { rest }
+              else { OPTIONS-DEFAULT.pad.at(axis) },
             )
           }
-
-          if mod == " " {
-            // Not a real modifier, but rather a placeholder for where a
-            // column separation was given.
-
-            // The following assertion should never fire, unless there
-            // is a bug.
-            assert(seps.len() > 0)
-
-            spec.pad.right = coerce-unit(seps.remove(0), "en") / 2
-            column-sep-given = spec.pad.right
-          }
-
-          else if mod == "b" {
-            spec.bold = true
-
-          } else if mod == "d" {
-            spec.valign = bottom
-
-          } else if mod == "e" {
-            cols.at(j) = "equalize"
-
-          } else if mod == "f" {
-            arg = args.f.remove(0)
-            if arg == "B" {
-              spec.bold = true
-            } else if arg == "I" {
-              spec.italic = true
-            } else if arg == "BI" {
-              spec.bold = true
-              spec.italic = true
-            } else {
-              spec.font = arg
-            }
-
-          } else if mod == "i" {
-            spec.italic = true
-
-          } else if mod == "m" {
-            arg = args.m.remove(0)
-            assert-ctx(
-              arg in options.macros,
-              "Macro '" + arg + "' not given in region options",
-              row: i,
-              col: j,
-            )
-            spec.macro = options.macros.at(arg)
-
-          } else if mod == "o" {
-            spec.fill = eval(args.o.remove(0))
-
-          } else if mod == "p" {
-            spec.size = coerce-unit(
-              args.p.remove(0),
-              "pt",
-              relative: spec.size,
-            )
-
-          } else if mod == "t" {
-            spec.valign = top
-
-          } else if mod == "u" {
-            spec.stagger = true
-
-          } else if mod == "v" {
-            spec.leading = coerce-unit(
-              args.v.remove(0),
-              "pt",
-              relative: spec.leading,
-            )
-
-          } else if mod == "w" {
-            my-min-width = coerce-unit(args.w.remove(0), "en")
-
-          } else if mod == "x" {
-            cols.at(j) = 1fr
-
-          } else if mod == "z" {
-            spec.ignore = true
-
-          }
         }
-
-        if my-min-width != none {
-          tbl-cell(spec, styles => {
-            cell-widths.update(d => {
-              // w(...) does not care about spans
-              let e = d.at(str(j), default: width-default)
-              let w = pt-length(my-min-width, styles)
-              let v = w + pt-length(spec.pad.left + spec.pad.right, styles)
-              e.min = calc.max(e.min, w)
-              e.max = calc.max(e.max, v)
-              d.insert(str(j), e)
-              d
-            })
-          })
-        }
-
-        new-rowdef.push(spec)
       }
+      options.insert("pad", value)
+    } else if name not in OPTIONS-DEFAULT {
+      panic("Unknown region option '" + name + "'")
+    }
+  }
+  if options.doublebox { options.box = true }
 
-      vlines += new-vlines
-      specs.push(new-rowdef)
+  // "Table format specifications"
+  let txt-specs = txt.slice(0, period).trim()
+  // Array of rows, each containing dictionaries ("column class" and
+  // "column modifiers")
+  let specs = ()
+
+  // "Table data"
+  let txt-data = txt.slice(period + 1).trim(" ").trim("\n")
+  // Array of rows, each containing an array of content cells
+  let rows = ()
+
+  // Named parameter "columns:" for tablex. Mostly used to track how
+  // many columns are in the table, and which have modifier "e"
+  // ("equalize") or "x" (1fr). The rest are auto, but will be
+  // replaced by real lengths before tablex is called; see
+  // "cell-widths" below.
+  let cols = ()
+
+  // Manually specified vertical and horizontal lines. These are
+  // arrays of tablex.vlinex and tablex.hlinex. The latter also keeps
+  // track of how many lines of input in the txt-data have been
+  // ignored so that we can still properly map each table row into the
+  // correct entry in "specs" above.
+  let vlines = ()
+  let hlines = ()
+
+  // Largest width of any cell in any column that has been modified "e".
+  let equalize-width = state("tbl-equalize-width")
+  equalize-width.update(0pt)
+  // Dictionary of column # -> dictionary:
+  //   min:   as specified by modifier "w", EXCLUDING padding
+  //   max:   maximum from all cells in this column, INCLUDING padding
+  //   num-l: maximum from all left halves of class "N" cells in this
+  //          column, EXCLUDING padding
+  //   num-r: same as above, but right halves
+  //
+  //   column # may be "j,n" in which case it applies to column j iff
+  //   colspan == n
+  let cell-widths = state("tbl-cell-widths")
+  cell-widths.update((:))
+  // Maximum possible width of the current table, based on the
+  // container we're in - or the width of the page minus the margins
+  // if there is no container.
+  let tbl-max-width = size.width
+
+  ////////////////// TABLE FORMAT / LAYOUT PARSING //////////////////
+  // Strip out any column modifier arguments first, since they may
+  // contain spaces, tabs, commas, or any of the classifier
+  // characters.
+  let args = (:)
+  let arg = txt-specs.match(regex-raw(`(?s)[ \t]*\((.*?)\)`))
+  while arg != none {
+    let modifier = lower(txt-specs.slice(arg.start - 1, count: 1))
+    if modifier not in args {
+      args.insert(modifier, ())
+    }
+    let txt-arg = arg.captures.first()
+
+    let num-open-parens = txt-arg.matches("(").len()
+    let close-parens = txt-specs.slice(arg.end).matches(")")
+    assert-ctx(
+      num-open-parens <= close-parens.len(),
+      "Expected ')' for column modifier argument",
+    )
+    if num-open-parens > 0 {
+      let old-end = arg.end
+      arg.end += close-parens.at(num-open-parens - 1).end
+      txt-arg += txt-specs.slice(old-end, arg.end)
     }
 
-    specs = specs.map(rowdef => {
-      let missing = cols.len() - rowdef.len()
-      if missing > 0 {
-        rowdef += (spec-default(options),) * missing
-      }
-      rowdef
-    })
+    args.at(modifier).push(txt-arg)
+    txt-specs = txt-specs.slice(0, arg.start) + txt-specs.slice(arg.end)
+    arg = txt-specs.match(regex-raw(`(?s)[ \t]*\((.*?)\)`))
+  }
 
-    /////////////////////// TABLE DATA PARSING ///////////////////////
+  // Remove whitespace.
+  txt-specs = txt-specs.replace(regex-raw(`[ \t]`), "")
 
-    // Strip out text blocks first.
-    let text-blocks = ()
-    let text-block = datastring.match(regex-raw(`(?s)T\{\n(.*?)\nT\}`))
+  // Strip out column separations next.
+  let col-seps = ()
+  let sep = txt-specs.match(regex-raw(`([0-9]+)`))
+  while sep != none {
+    col-seps.push(sep.captures.first())
+    // Leave a single space as a placeholder for parsing below.
+    txt-specs = txt-specs.slice(0, sep.start) + " " + txt-specs.slice(sep.end)
+    sep = txt-specs.match(regex-raw(`([0-9]+)`))
+  }
 
-    while text-block != none {
-      text-blocks.push(text-block.captures.first())
-      datastring = (
-        datastring.slice(0, text-block.start)
-        + "#tbl.text-block"
-        + datastring.slice(text-block.end)
-      )
-      text-block = datastring.match(regex-raw(`(?s)T\{\n(.*?)\nT\}`))
+  // "Newlines and commas are special; they apply the descriptors
+  // following them to a subsequent row of the table."
+  txt-specs = txt-specs.split(regex-raw(`[,\n]+`)).enumerate()
+  for (row, txt-row) in txt-specs {
+    let vline-end = if row == txt-specs.len() - 1 {
+      none
+    } else {
+      row + 1
     }
 
-    for (i, row) in datastring.split("\n").enumerate() {
-      i = i - hlines.len()
+    // Column descriptors are optionally separated by spaces or tabs.
+    // Commas and newlines start a new "row definition" of column
+    // descriptors (see outer loop).
+    txt-row = txt-row.matches(regex-raw(
+      `(?i)`,
+      `([ACLNRS=^_-]|[|]+)`,
+      `([^ACLNRS=|^_-]+)?`,
+    ))
+    let new-vlines = ()
+    let new-rowdef = ()
 
-      // Skippable data entries:
-      if row == "_" {
-        // Horizontal rule
-        hlines.push(tablex.hlinex(
-          y: i,
+    let column-sep-given = none
+    for (col, txt-col) in txt-row.enumerate() {
+      let (class, txt-mods) = txt-col.captures
+
+      let spec = SPEC-DEFAULT(options)
+      spec.class = upper(class)
+      if txt-mods == none { txt-mods = "" }
+      txt-mods = lower(txt-mods)
+
+      col -= new-vlines.len()
+      let col-line = if col == 0 { 0 } else { col - 1 }
+      if spec.class == "S" {
+        spec.origin = col - 1
+        while new-rowdef.at(spec.origin, default: (class: none)).class == "S" {
+          spec.origin -= 1
+        }
+        new-rowdef.at(spec.origin).colspan += 1
+      } else if spec.class == "|" {
+        assert-ctx(
+          txt-mods == "",
+          "Column modifiers should precede vertical lines",
+          row: row,
+          col: col-line,
+        )
+        new-vlines.push(tablex.vlinex(
+          start: row,
+          end: vline-end,
+          x: col,
           stroke: options.stroke,
         ))
         continue
-
-      } else if row == "=" {
-        // Double horizontal rule
-        panic("Double horizontal lines are not supported")
-
-      } else if row == ".TH" {
-        // End-of-header
-        options.repeat-header = true
-        options.header-rows = i
-        hlines.push(()) // A bit of a hack, but this keeps row numbering
-                        // correct later.
-        continue
-
-      } else if row == ".T&" {
-        panic("'.T&' is not supported")
-
-      } else if row.starts-with(".\\\"") {
-        // Comment
-        hlines.push(())
-        continue
-      } else if row.starts-with(".") {
-        panic("Unsupported command: `" + row + "'")
+      } else if spec.class == "||" {
+        assert-ctx(
+          false,
+          "Double vertical lines are not supported",
+          row: row,
+          col: col-line,
+        )
+      } else if spec.class.starts-with("|") {
+        assert-ctx(
+          false,
+          "Invalid column class: '" + spec.class + "'",
+          row: row,
+          col: col-line,
+        )
       }
 
-      let rowdef = specs.at(calc.min(i, specs.len() - 1))
-      row = row.split(options.tab)
-
-      let missing = rowdef.len() - row.len()
-      if missing > 0 {
-        // Add empty columns if fewer than expected are provided
-        row += ("",) * missing
-      } else if missing < 0 {
-        panic("Too many columns")
+      if col >= cols.len() {
+        cols.push(auto)
       }
 
-      // This will hold each parsed cell
-      let new-row = ()
+      if column-sep-given != none {
+        spec.pad.left = column-sep-given
+        column-sep-given = none
+      }
 
-      for (j, col) in row.enumerate() {
-        let text-block = false
-        if col.trim() == "#tbl.text-block" {
-          text-block = true
-          col = text-blocks.remove(0)
-        } else if col.trim().starts-with("#tbl.text-block") {
+      spec.halign = {
+        if spec.class in ("C", "N", "A") {
+          center
+        } else if spec.class == "R" {
+          right
+        } else {
+          left
+        }
+      }
+
+      let min-width-given = none
+
+      for mod in txt-mods.clusters() {
+        assert-ctx(
+          mod in " bdefimoptuvwxz".clusters(),
+          "Column modifier '" + mod + "' is not supported",
+          row: row,
+          col: col,
+        )
+
+        if mod in "fmopvw".clusters() {
           assert-ctx(
-            false,
-            "Nothing should follow text block close `T}` in same cell",
-            row: i,
-            col: j,
+            mod in args,
+            "Missing argument for column modifier '" + mod + "'",
+            row: row,
+            col: col,
           )
         }
 
-        col = col.trim()
-        let colstring = col
-        if colstring in special-entries { col = "" }
-        let empty = col == ""
-        col = col.replace("\\&", "")
+        if mod == " " {
+          // Not a real modifier, but rather a placeholder for where a
+          // column separation was given.
 
-        let spec = rowdef.at(j)
-        let tbl-n = none
+          // The following assertion should never fire, unless there
+          // is a bug.
+          assert(col-seps.len() > 0)
 
-        col = tbl-cell(spec, {
-          let (cell-open, cell-close) = modes.at(options.mode)
-          let align-pos = none
-          let sep = []
-          let n = 0
+          spec.pad.right = coerce-unit(col-seps.remove(0), "en") / 2
+          column-sep-given = spec.pad.right
+        }
 
-          if (spec.class == "N"
-              and col != "" // Do nothing if special entry
-              and not text-block
-          ) {
-            // one position AFTER \&
-            align-pos = colstring.position("\\&")
-            n = "\\&".len()
+        else if mod == "b" {
+          spec.bold = true
+
+        } else if mod == "d" {
+          spec.valign = bottom
+
+        } else if mod == "e" {
+          cols.at(col) = "equalize"
+
+        } else if mod == "f" {
+          arg = args.f.remove(0)
+          if arg == "B" {
+            spec.bold = true
+          } else if arg == "I" {
+            spec.italic = true
+          } else if arg == "BI" {
+            spec.bold = true
+            spec.italic = true
+          } else {
+            spec.font = arg
+          }
+
+        } else if mod == "i" {
+          spec.italic = true
+
+        } else if mod == "m" {
+          arg = args.m.remove(0)
+          assert-ctx(
+            arg in options.macros,
+            "Macro '" + arg + "' not given in region options",
+            row: row,
+            col: col,
+          )
+          spec.macro = options.macros.at(arg)
+
+        } else if mod == "o" {
+          spec.fill = eval(args.o.remove(0))
+
+        } else if mod == "p" {
+          spec.size = coerce-unit(
+            args.p.remove(0),
+            "pt",
+            relative: spec.size,
+          )
+
+        } else if mod == "t" {
+          spec.valign = top
+
+        } else if mod == "u" {
+          spec.stagger = true
+
+        } else if mod == "v" {
+          spec.leading = coerce-unit(
+            args.v.remove(0),
+            "pt",
+            relative: spec.leading,
+          )
+
+        } else if mod == "w" {
+          min-width-given = coerce-unit(args.w.remove(0), "en")
+
+        } else if mod == "x" {
+          cols.at(col) = 1fr
+
+        } else if mod == "z" {
+          spec.ignore = true
+
+        }
+      }
+
+      if min-width-given != none {
+        tbl-cell(spec, styles => {
+          cell-widths.update(d => {
+            // w(...) does not care about spans
+            let (k, e) = cell-width-at(d, col)
+            let w = pt-length(min-width-given, styles)
+            let v = w + pt-length(spec.pad.left + spec.pad.right, styles)
+            e.min = calc.max(e.min, w)
+            e.max = calc.max(e.max, v)
+            d.insert(k, e)
+            d
+          })
+        })
+      }
+
+      new-rowdef.push(spec)
+    }
+
+    vlines += new-vlines
+    specs.push(new-rowdef)
+  }
+
+  specs = specs.map(rowdef => {
+    let missing = cols.len() - rowdef.len()
+    if missing > 0 {
+      rowdef += (SPEC-DEFAULT(options),) * missing
+    }
+    rowdef
+  })
+
+  /////////////////////// TABLE DATA PARSING ///////////////////////
+
+  // Strip out text blocks first.
+  let txt-blocks = ()
+  let txt-block = txt-data.match(regex-raw(`(?s)T\{\n(.*?)\nT\}`))
+  while txt-block != none {
+    txt-blocks.push(txt-block.captures.first())
+    txt-data = (
+      txt-data.slice(0, txt-block.start)
+      + "#tbl.txt-block"
+      + txt-data.slice(txt-block.end)
+    )
+    txt-block = txt-data.match(regex-raw(`(?s)T\{\n(.*?)\nT\}`))
+  }
+
+  for (row, txt-row) in txt-data.split("\n").enumerate() {
+    row -= hlines.len()
+
+    // Skippable data entries:
+    if txt-row == "_" {
+      // Horizontal rule
+      hlines.push(tablex.hlinex(
+        y: row,
+        stroke: options.stroke,
+      ))
+      continue
+
+    } else if txt-row == "=" {
+      // Double horizontal rule
+      panic("Double horizontal lines are not supported")
+
+    } else if txt-row == ".TH" {
+      // End-of-header
+      options.repeat-header = true
+      options.header-rows = row
+      hlines.push(()) // A bit of a hack, but this keeps row numbering
+                      // correct later.
+      continue
+
+    } else if txt-row == ".T&" {
+      panic("'.T&' is not supported")
+
+    } else if txt-row.starts-with(".\\\"") {
+      // Comment
+      hlines.push(())
+      continue
+    } else if txt-row.starts-with(".") {
+      panic("Unsupported command: `" + txt-row + "'")
+    }
+
+    let rowdef = specs.at(calc.min(row, specs.len() - 1))
+    txt-row = txt-row.split(options.tab)
+
+    let missing = rowdef.len() - txt-row.len()
+    if missing > 0 {
+      // Add empty columns if fewer than expected are provided
+      txt-row += ("",) * missing
+    } else if missing < 0 {
+      panic("Too many columns")
+    }
+
+    // This will hold each parsed cell
+    let new-row = ()
+
+    for (col, cell) in txt-row.enumerate() {
+      let txt-block = false
+      if cell.trim() == "#tbl.txt-block" {
+        txt-block = true
+        cell = txt-blocks.remove(0)
+      } else if cell.trim().starts-with("#tbl.txt-block") {
+        assert-ctx(
+          false,
+          "Nothing should follow text block close `T}` in same cell",
+          row: row,
+          col: col,
+        )
+      }
+
+      cell = cell.trim()
+      let txt-cell = cell
+      if txt-cell in SPECIAL-ENTRIES { cell = "" }
+      let empty = cell == ""
+      cell = cell.replace("\\&", "")
+
+      let spec = rowdef.at(col)
+      let tbl-numeric = none
+
+      cell = tbl-cell(spec, {
+        let (cell-open, cell-close) = CELL-MODES.at(options.mode)
+        let align-pos = none
+        let sep = []
+        let n = 0
+
+        if (spec.class == "N"
+            and cell != "" // Do nothing if special entry
+            and not txt-block
+        ) {
+          // one position AFTER \&
+          align-pos = txt-cell.position("\\&")
+          n = "\\&".len()
+
+          if align-pos == none {
+            // OR rightmost decimalpoint "ADJACENT TO DIGIT"
+            //    (so "26.4. 12" aligns on "26.4", but
+            //     "26.4 .12" aligns on ".12")
+            let all-pos = txt-cell.matches(options.decimalpoint)
+
+            if all-pos != () {
+              sep = options.decimalpoint
+              n = sep.len()
+
+              for prev-pos in all-pos.rev() {
+                if prev-pos.start + n >= txt-cell.len() {
+                  continue
+                }
+                let next-char = txt-cell.slice(prev-pos.start + n, count: 1)
+                if next-char.match(regex-raw(`[0-9]`)) != none {
+                  align-pos = prev-pos.start
+                  break
+                }
+              }
+            }
 
             if align-pos == none {
-              // OR rightmost decimalpoint "ADJACENT TO DIGIT"
-              //    (so "26.4. 12" aligns on "26.4", but
-              //     "26.4 .12" aligns on ".12")
-              let all-pos = colstring.matches(options.decimalpoint)
-
-              if all-pos != () {
-                sep = options.decimalpoint
-                n = sep.len()
-
-                for prev-pos in all-pos.rev() {
-                  if prev-pos.start + n >= colstring.len() {
-                    continue
-                  }
-                  let next-char = colstring.slice(prev-pos.start + n, count: 1)
-                  if next-char.match(regex-raw(`[0-9]`)) != none {
-                    align-pos = prev-pos.start
-                    break
-                  }
-                }
-              }
-
-              if align-pos == none {
-                align-pos = colstring.matches(regex-raw(`[0-9]`))
-                if align-pos != () {
-                  // OR rightmost digit
-                  align-pos = align-pos.last().end
-                  sep = []
-                  n = 0
-                } else {
-                  // OR centered (no digits)
-                  align-pos = none
-                  sep = []
-                  n = 0
-                }
+              align-pos = txt-cell.matches(regex-raw(`[0-9]`))
+              if align-pos != () {
+                // OR rightmost digit
+                align-pos = align-pos.last().end
+                sep = []
+                n = 0
+              } else {
+                // OR centered (no digits)
+                align-pos = none
+                sep = []
+                n = 0
               }
             }
           }
-
-          if align-pos != none {
-            let txt-left = colstring.slice(0, align-pos)
-            let txt-right = colstring.slice(align-pos + n)
-
-            // Hacky as it gets... but necessary to preserve some
-            // spacing across the decimalpoint.
-            let sp = style(styles => {
-              let w = measure("x  .", styles).width
-              w -= measure("x.", styles).width
-              h(w)
-            })
-
-            let cell-left = eval(cell-open + txt-left.trim() + cell-close)
-            let cell-right = eval(cell-open + txt-right.trim() + cell-close)
-
-            // Spacing adjustments
-            if txt-left.ends-with(regex-raw(`[^ \t][ \t]`)) {
-              cell-left = cell-left + sp
-            }
-            if txt-right.trim() == "" {
-              sep = hide(options.decimalpoint)
-            } else if txt-right.starts-with(regex-raw(`[ \t][^ \t]`)) {
-              cell-right = sp + cell-right
-            }
-
-            tbl-n = (cell-left, sep, cell-right)
-            stack(dir: ltr, ..tbl-n)
-
-          } else {
-            eval(cell-open + col + cell-close)
-          }
-        })
-
-        if text-block {
-          col = locate(loc => {
-            let w = cell-widths.at(loc).at(str(j), default: width-default)
-            if w.min != 0pt {
-              box(width: w.min, col)
-            } else {
-              let width = tbl-max-width
-              width *= spec.colspan
-              width /= cols.len() + 1
-
-              box(width: width, col)
-            }
-          })
         }
 
-        let next-spec = rowdef.at(j + 1, default: (class: none))
+        if align-pos != none {
+          let txt-left = txt-cell.slice(0, align-pos)
+          let txt-right = txt-cell.slice(align-pos + n)
 
-        if spec.ignore {
-          // Preserve height, but ignore width.
-          col = tbl-cell(spec, styles => {
-            box(
-              width: 0pt,
-              height: measure(col, styles).height,
-              place(spec.halign + spec.valign, col)
-            )
+          // Hacky as it gets... but necessary to preserve some
+          // spacing across the decimalpoint.
+          let sp = style(styles => {
+            let w = measure("x  .", styles).width
+            w -= measure("x.", styles).width
+            h(w)
           })
+
+          let cell-left = eval(cell-open + txt-left.trim() + cell-close)
+          let cell-right = eval(cell-open + txt-right.trim() + cell-close)
+
+          // Spacing adjustments
+          if txt-left.ends-with(regex-raw(`[^ \t][ \t]`)) {
+            cell-left = cell-left + sp
+          }
+          if txt-right.trim() == "" {
+            sep = hide(options.decimalpoint)
+          } else if txt-right.starts-with(regex-raw(`[ \t][^ \t]`)) {
+            cell-right = sp + cell-right
+          }
+
+          tbl-numeric = (cell-left, sep, cell-right)
+          stack(dir: ltr, ..tbl-numeric)
+
         } else {
-          tbl-cell(spec, styles => {
-            let w = measure(col, styles).width
-            let v = w + pt-length(spec.pad.left, styles)
-            v += pt-length(spec.pad.right, styles)
-            if spec.colspan == 1 and cols.at(j) == "equalize" {
-                equalize-width.update(e => calc.max(e, v))
-            }
-            let k = str(j)
-            if spec.colspan > 1 {
-              k += "," + str(spec.colspan)
-            }
-            cell-widths.update(d => {
-              let e = d.at(k, default: width-default)
-              e.max = calc.max(e.max, v)
-
-              if tbl-n != none {
-                let (cell-left, _, cell-right) = tbl-n
-                cell-left = measure(cell-left, styles).width
-                cell-right = measure(cell-right, styles).width
-
-                e.num-l = calc.max(e.num-l, cell-left)
-                e.num-r = calc.max(e.num-r, cell-right)
-              } else if spec.class == "A" {
-                e.alpha = calc.max(e.alpha, w)
-              }
-
-              d.insert(k, e)
-              d
-            })
-          })
+          eval(cell-open + cell + cell-close)
         }
+      })
 
-        if spec.class == "S" {
-          assert-ctx(
-            empty,
-            "Non-empty cell when class is spanned column",
-            row: i,
-            col: j,
-          )
-          col = ()
+      if txt-block {
+        cell = locate(loc => {
+          let (_, e) = cell-width-at(cell-widths, col, loc: loc)
+          if e.min != 0pt {
+            box(width: e.min, cell)
+          } else {
+            let width = tbl-max-width
+            width *= spec.colspan
+            width /= cols.len() + 1
 
-        } else if spec.class == "^" or colstring == "\\^" {
-          assert-ctx(
-            colstring == "\\^" or empty,
-            "Non-empty cell when class is spanned row",
-            row: i,
-            col: j,
-          )
-
-          // Find origin cell for this spanned one in current column
-          let prev-row = -1
-          while rows.at(prev-row).at(j) == () {
-            prev-row -= 1
+            box(width: width, cell)
           }
-          rows.at(prev-row).at(j).rowspan += 1
-          col = ()
-
-        } else if (spec.class in ("_", "-", "=")
-              or colstring in ("_", "=", "\\_", "\\=")
-        ) {
-          assert-ctx(
-            empty,
-            "Non-empty cell when class is horizontal rule",
-            row: i,
-            col: j,
-          )
-
-          let line-start-x = 0%
-          let line-length = 100%
-          if colstring in ("\\_", "\\=") {
-            line-start-x += spec.pad.left
-            line-length -= spec.pad.left + spec.pad.right
-          }
-
-          col = tablex.cellx(
-            align: center + horizon,
-            fill: spec.fill,
-            colspan: spec.colspan,
-
-            {
-              if spec.class in ("_", "-") or colstring in ("_", "\\_") {
-                // Horizontal rule
-                line(
-                  start: (line-start-x, 50%),
-                  length: line-length,
-                  stroke: options.stroke,
-                )
-              } else {
-                // Double horizontal rule
-                line(
-                  start: (line-start-x, 50% - 1pt),
-                  length: line-length,
-                  stroke: options.stroke,
-                )
-                line(
-                  start: (line-start-x, 50% + 1pt),
-                  length: line-length,
-                  stroke: options.stroke,
-                )
-              }
-            }
-          )
-
-        } else if spec.class in ("L", "C", "R", "N", "A") {
-          col = tablex.cellx(
-            align: spec.halign + spec.valign,
-            fill: spec.fill,
-            colspan: spec.colspan,
-
-            if spec.class == "A" { col }
-            else { pad(..spec.pad, col) },
-          )
-
-          if tbl-n != none {
-            col.tbl-n = tbl-n
-          }
-        }
-
-        new-row.push(col)
+        })
       }
-      rows.push(new-row)
-    }
 
-    ///////////////////////// LINE REALIZATION /////////////////////////
-    if options.box and not options.auto-lines {
-      hlines += (
-        tablex.hlinex(y: 0),
-        tablex.hlinex(y: rows.len()),
-      )
-
-      vlines += (
-        tablex.vlinex(x: 0),
-        tablex.vlinex(x: cols.len()),
-      )
-    }
-
-    //////////////////////// TABLE REALIZATION ////////////////////////
-    align(
-      options.tbl-align,
-
-      block(
-        breakable: options.breakable,
-        inset:
-          if options.doublebox { 2pt }
-          else { 0pt },
-        stroke:
-          if options.doublebox { options.stroke }
-          else { none },
-
-        /********************* WIDTH REALIZATION *********************/
-        locate(loc => {
-          let final-eq-width = equalize-width.at(loc)
-          let final-widths = cell-widths.at(loc)
-          let final-rows = rows.enumerate().map(row => {
-            let (i, row) = row
-            let rowdef = specs.at(calc.min(i, specs.len() - 1))
-
-            row.enumerate().map(col => {
-              let (j, col) = col
-              let spec = rowdef.at(j)
-              let k = str(j)
-              if spec.colspan > 1 {
-                k += "," + str(spec.colspan)
-              }
-
-              if type(col) == "dictionary" and "tbl-n" in col {
-                // Align smaller class "N" cells in this column
-                col.content = tbl-cell(spec, {
-                  let (cell-left, sep, cell-right) = col.tbl-n
-                  let w = final-widths.at(k, default: width-default)
-
-                  pad(
-                    ..spec.pad,
-                    stack(
-                      dir: ltr,
-                      box(width: w.num-l, align(right, cell-left)),
-                      sep,
-                      box(width: w.num-r, align(left, cell-right)),
-                    )
-                  )
-                })
-              } else if type(col) == "dictionary" and spec.class == "A" {
-                // Align smaller class "A" cells in this column
-                col.content = tbl-cell(spec, {
-                  let w = final-widths.at(k, default: width-default)
-
-                  pad(
-                    ..spec.pad,
-                    box(width: w.alpha, align(left, col.content)),
-                  )
-                })
-              }
-
-              col
-            })
-          })
-
-          // Freeze all "auto" widths into real lengths
-          let final-cols = cols.enumerate().map(c => {
-            let (j, c) = c
-            if c == auto {
-              final-widths.at(str(j), default: (max: auto)).max
-            } else {
-              c
-            }
-          })
-
-          // Distribute excess width from colspanned cells
-          for (c, e) in final-widths {
-            if "," not in c {
-              continue
-            }
-            let (begin, end) = c.split(",")
-            begin = int(begin)
-            end = int(end)
-            let widths = final-cols.slice(begin, end)
-            if widths.any(w => w == 1fr) {
-              continue
-            }
-            let curr-width = 0pt
-            let eq = 0
-            for width in widths {
-              if width == "equalize" {
-                eq += 1
-                curr-width += final-eq-width
-              } else {
-                curr-width += width
-              }
-            }
-            let diff = (e.max - curr-width) / 1pt
-            if diff <= 0 {
-              continue
-            }
-            for (j, width) in widths.enumerate() {
-              j += begin
-              width += diff * width / (curr-width) * 1pt
-              final-cols.at(j) = width
-            }
-            final-eq-width += eq * diff * final-eq-width / (curr-width) * 1pt
-          }
-
-          // Freeze "equalize" widths into real lengths
-          final-cols = final-cols.map(c => {
-            if c == "equalize" {
-              final-eq-width
-            } else {
-              c
-            }
-          })
-
-          tablex.tablex(
-            columns: final-cols,
-            auto-lines: options.auto-lines,
-            header-rows: options.header-rows,
-            inset: 0pt,
-            repeat-header: options.repeat-header,
-            stroke: options.stroke,
-
-            ..vlines,
-            ..hlines,
-            ..final-rows.flatten(),
+      if spec.ignore {
+        // Preserve height, but ignore width.
+        cell = tbl-cell(spec, styles => {
+          box(
+            width: 0pt,
+            height: measure(cell, styles).height,
+            place(spec.halign + spec.valign, cell)
           )
         })
-      )
+      } else {
+        tbl-cell(spec, styles => {
+          let w = measure(cell, styles).width
+          let v = w + pt-length(spec.pad.left + spec.pad.right, styles)
+          if spec.colspan == 1 and cols.at(col) == "equalize" {
+              equalize-width.update(e => calc.max(e, v))
+          }
+          cell-widths.update(d => {
+            let (k, e) = cell-width-at(d, col, spec: spec)
+            e.max = calc.max(e.max, v)
+
+            if tbl-numeric != none {
+              let (cell-left, _, cell-right) = tbl-numeric
+              cell-left = measure(cell-left, styles).width
+              cell-right = measure(cell-right, styles).width
+
+              e.num-l = calc.max(e.num-l, cell-left)
+              e.num-r = calc.max(e.num-r, cell-right)
+            } else if spec.class == "A" {
+              e.alpha = calc.max(e.alpha, w)
+            }
+
+            d.insert(k, e)
+            d
+          })
+        })
+      }
+
+      if spec.class == "S" {
+        assert-ctx(
+          empty,
+          "Non-empty cell when class is spanned column",
+          row: row,
+          col: col,
+        )
+        cell = ()
+
+      } else if spec.class == "^" or txt-cell == "\\^" {
+        assert-ctx(
+          txt-cell == "\\^" or empty,
+          "Non-empty cell when class is spanned row",
+          row: row,
+          col: col,
+        )
+
+        // Find origin cell for this spanned one in current column
+        let prev-row = -1
+        while rows.at(prev-row).at(col) == () {
+          prev-row -= 1
+        }
+        rows.at(prev-row).at(col).rowspan += 1
+        cell = ()
+
+      } else if (spec.class in ("_", "-", "=")
+            or txt-cell in ("_", "=", "\\_", "\\=")
+      ) {
+        assert-ctx(
+          empty,
+          "Non-empty cell when class is horizontal rule",
+          row: row,
+          col: col,
+        )
+
+        let line-start-x = 0%
+        let line-length = 100%
+        if txt-cell in ("\\_", "\\=") {
+          line-start-x += spec.pad.left
+          line-length -= spec.pad.left + spec.pad.right
+        }
+
+        cell = tablex.cellx(
+          align: center + horizon,
+          fill: spec.fill,
+          colspan: spec.colspan,
+
+          {
+            if spec.class in ("_", "-") or txt-cell in ("_", "\\_") {
+              // Horizontal rule
+              line(
+                start: (line-start-x, 50%),
+                length: line-length,
+                stroke: options.stroke,
+              )
+            } else {
+              // Double horizontal rule
+              line(
+                start: (line-start-x, 50% - 1pt),
+                length: line-length,
+                stroke: options.stroke,
+              )
+              line(
+                start: (line-start-x, 50% + 1pt),
+                length: line-length,
+                stroke: options.stroke,
+              )
+            }
+          }
+        )
+
+      } else if spec.class in ("L", "C", "R", "N", "A") {
+        cell = tablex.cellx(
+          align: spec.halign + spec.valign,
+          fill: spec.fill,
+          colspan: spec.colspan,
+
+          if spec.class == "A" { cell }
+          else { pad(..spec.pad, cell) },
+        )
+
+        if tbl-numeric != none {
+          cell.tbl-numeric = tbl-numeric
+        }
+      }
+
+      new-row.push(cell)
+    }
+    rows.push(new-row)
+  }
+
+  ///////////////////////// LINE REALIZATION /////////////////////////
+  if options.box and not options.auto-lines {
+    hlines += (
+      tablex.hlinex(y: 0),
+      tablex.hlinex(y: rows.len()),
     )
-  })
+
+    vlines += (
+      tablex.vlinex(x: 0),
+      tablex.vlinex(x: cols.len()),
+    )
+  }
+
+  //////////////////////// TABLE REALIZATION ////////////////////////
+  align(
+    options.tbl-align,
+
+    block(
+      breakable: options.breakable,
+      inset:
+        if options.doublebox { 2pt }
+        else { 0pt },
+      stroke:
+        if options.doublebox { options.stroke }
+        else { none },
+
+      /********************* WIDTH REALIZATION *********************/
+      locate(loc => {
+        let equalize-width = equalize-width.at(loc)
+        let cell-widths = cell-widths.at(loc)
+        let rows = rows.enumerate().map(row => {
+          let (row, cells) = row
+          let rowdef = specs.at(calc.min(row, specs.len() - 1))
+
+          cells.enumerate().map(cell => {
+            let (col, cell) = cell
+            let spec = rowdef.at(col)
+            let (_, e) = cell-width-at(cell-widths, col, spec: spec)
+
+            if type(cell) == "dictionary" and "tbl-numeric" in cell {
+              // Align smaller class "N" cells in this column
+              cell.content = tbl-cell(spec, {
+                let (cell-left, sep, cell-right) = cell.tbl-numeric
+
+                pad(
+                  ..spec.pad,
+                  stack(
+                    dir: ltr,
+                    box(width: e.num-l, align(right, cell-left)),
+                    sep,
+                    box(width: e.num-r, align(left, cell-right)),
+                  )
+                )
+              })
+            } else if type(cell) == "dictionary" and spec.class == "A" {
+              // Align smaller class "A" cells in this column
+              cell.content = tbl-cell(spec, {
+                pad(
+                  ..spec.pad,
+                  box(width: e.alpha, align(left, cell.content)),
+                )
+              })
+            }
+
+            cell
+          })
+        })
+
+        // Freeze all "auto" widths into real lengths
+        let cols = cols.enumerate().map(c => {
+          let (j, c) = c
+          if c == auto {
+            cell-widths.at(str(j), default: (max: auto)).max
+          } else {
+            c
+          }
+        })
+
+        // Distribute excess width from colspanned cells
+        for (c, e) in cell-widths {
+          if "," not in c {
+            continue
+          }
+          let (begin, end) = c.split(",")
+          begin = int(begin)
+          end = int(end)
+          let widths = cols.slice(begin, end)
+          if widths.any(w => w == 1fr) {
+            continue
+          }
+          let curr-width = 0pt
+          let eq = 0
+          for width in widths {
+            if width == "equalize" {
+              eq += 1
+              curr-width += equalize-width
+            } else {
+              curr-width += width
+            }
+          }
+          let diff = (e.max - curr-width) / 1pt
+          if diff <= 0 {
+            continue
+          }
+          for (j, width) in widths.enumerate() {
+            j += begin
+            width += diff * width / (curr-width) * 1pt
+            cols.at(j) = width
+          }
+          equalize-width += eq * diff * equalize-width / (curr-width) * 1pt
+        }
+
+        // Freeze "equalize" widths into real lengths
+        cols = cols.map(c => {
+          if c == "equalize" {
+            equalize-width
+          } else {
+            c
+          }
+        })
+
+        tablex.tablex(
+          columns: cols,
+          auto-lines: options.auto-lines,
+          header-rows: options.header-rows,
+          inset: 0pt,
+          repeat-header: options.repeat-header,
+          stroke: options.stroke,
+
+          ..vlines,
+          ..hlines,
+          ..rows.flatten(),
+        )
+      })
+    )
+  )
+})
+
+#let template(body, ..options) = {
+  show raw.where(lang: "tbl"): it => tbl(it.text, ..options)
 
   body
 }
