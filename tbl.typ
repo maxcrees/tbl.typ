@@ -35,7 +35,13 @@
   "M": (),
 )
 
-#let width-default = (min: 0pt, max: 0pt, num-l: 0pt, num-r: 0pt)
+#let width-default = (
+  min: 0pt,
+  max: 0pt,
+  num-l: 0pt,
+  num-r: 0pt,
+  alpha: 0pt,
+)
 
 #let options-default = (
   // troff tbl
@@ -371,13 +377,6 @@
         if modstring == none { modstring = "" }
         modstring = lower(modstring)
 
-        assert-ctx(
-          spec.class != "A",
-          "Column class 'A' is not supported",
-          row: i,
-          col: j,
-        )
-
         j -= new-vlines.len()
         if spec.class == "S" {
           spec.origin = j - 1
@@ -425,7 +424,7 @@
         }
 
         spec.halign = {
-          if spec.class in ("C", "N") {
+          if spec.class in ("C", "N", "A") {
             center
           } else if spec.class == "R" {
             right
@@ -788,6 +787,8 @@
 
                 e.num-l = calc.max(e.num-l, cell-left)
                 e.num-r = calc.max(e.num-r, cell-right)
+              } else if spec.class == "A" {
+                e.alpha = calc.max(e.alpha, w)
               }
 
               d.insert(k, e)
@@ -867,13 +868,14 @@
             }
           )
 
-        } else if spec.class in ("L", "C", "R", "N") {
+        } else if spec.class in ("L", "C", "R", "N", "A") {
           col = tablex.cellx(
             align: spec.halign + spec.valign,
             fill: spec.fill,
             colspan: spec.colspan,
 
-            pad(..spec.pad, col),
+            if spec.class == "A" { col }
+            else { pad(..spec.pad, col) },
           )
 
           if tbl-n != none {
@@ -942,6 +944,16 @@
                       sep,
                       box(width: w.num-r, align(left, cell-right)),
                     )
+                  )
+                })
+              } else if type(col) == "dictionary" and spec.class == "A" {
+                // Align smaller class "A" cells in this column
+                col.content = tbl-cell(spec, {
+                  let w = final-widths.at(k, default: width-default)
+
+                  pad(
+                    ..spec.pad,
+                    box(width: w.alpha, align(left, col.content)),
                   )
                 })
               }
