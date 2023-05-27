@@ -75,6 +75,7 @@
   class: "L",
 
   bold: false,
+  colspan: 1,
   fill: auto,
   font: options.font,
   halign: left,
@@ -82,6 +83,7 @@
   italic: false,
   leading: options.leading,
   macro: none,
+  origin: none,
   pad: options.pad,
   size: 1em,
   stagger: false,
@@ -266,7 +268,7 @@
     // many columns are in the table, and which have modifier "e"
     // ("equalize") or "x" (1fr). The rest are auto, but will be
     // replaced by real lengths before tablex is called; see
-    // "final-widths" below.
+    // "cell-widths" below.
     let cols = ()
 
     // Manually specified vertical and horizontal lines. These are
@@ -286,8 +288,11 @@
     //   num-l: maximum from all left halves of class "N" cells in this
     //          column, EXCLUDING padding
     //   num-r: same as above, but right halves
-    let final-widths = state("tbl-final-widths")
-    final-widths.update((:))
+    //
+    //   column # may be "j,n" in which case it applies to column j iff
+    //   colspan == n
+    let cell-widths = state("tbl-cell-widths")
+    cell-widths.update((:))
     // Maximum possible width of the current table, based on the
     // container we're in - or the width of the page minus the margins
     // if there is no container.
@@ -374,7 +379,13 @@
         )
 
         j -= new-vlines.len()
-        if spec.class == "|" {
+        if spec.class == "S" {
+          spec.origin = j - 1
+          while new-rowdef.at(spec.origin, default: (class: none)).class == "S" {
+            spec.origin -= 1
+          }
+          new-rowdef.at(spec.origin).colspan += 1
+        } else if spec.class == "|" {
           assert-ctx(
             modstring == "",
             "Column modifiers should precede vertical lines",
@@ -526,7 +537,8 @@
 
         if my-min-width != none {
           tbl-cell(spec, styles => {
-            final-widths.update(d => {
+            cell-widths.update(d => {
+              // w(...) does not care about spans
               let e = d.at(str(j), default: width-default)
               let w = pt-length(my-min-width, styles)
               let v = w + pt-length(spec.pad.left + spec.pad.right, styles)
@@ -729,21 +741,12 @@
 
         if text-block {
           col = locate(loc => {
-            let w = final-widths.at(loc).at(str(j), default: width-default)
+            let w = cell-widths.at(loc).at(str(j), default: width-default)
             if w.min != 0pt {
               box(width: w.min, col)
             } else {
-              let spanned-cols = 1
-              for next-spec in rowdef.slice(j + 1) {
-                if next-spec.class == "S" {
-                  spanned-cols += 1
-                } else {
-                  break
-                }
-              }
-
               let width = tbl-max-width
-              width *= spanned-cols
+              width *= spec.colspan
               width /= cols.len() + 1
 
               box(width: width, col)
@@ -752,6 +755,7 @@
         }
 
         let next-spec = rowdef.at(j + 1, default: (class: none))
+
         if spec.ignore {
           // Preserve height, but ignore width.
           col = tbl-cell(spec, styles => {
@@ -761,16 +765,20 @@
               place(spec.halign + spec.valign, col)
             )
           })
-        } else if next-spec.class != "S" {
+        } else {
           tbl-cell(spec, styles => {
-            let v = measure(col, styles).width
-            v += pt-length(spec.pad.left, styles)
+            let w = measure(col, styles).width
+            let v = w + pt-length(spec.pad.left, styles)
             v += pt-length(spec.pad.right, styles)
-            if cols.at(j) == "equalize" {
-              equalize-width.update(w => calc.max(w, v))
+            if spec.colspan == 1 and cols.at(j) == "equalize" {
+                equalize-width.update(e => calc.max(e, v))
             }
-            final-widths.update(d => {
-              let e = d.at(str(j), default: width-default)
+            let k = str(j)
+            if spec.colspan > 1 {
+              k += "," + str(spec.colspan)
+            }
+            cell-widths.update(d => {
+              let e = d.at(k, default: width-default)
               e.max = calc.max(e.max, v)
 
               if tbl-n != none {
@@ -782,7 +790,7 @@
                 e.num-r = calc.max(e.num-r, cell-right)
               }
 
-              d.insert(str(j), e)
+              d.insert(k, e)
               d
             })
           })
@@ -795,13 +803,6 @@
             row: i,
             col: j,
           )
-
-          // Find origin cell for this spanned one in current row
-          let prev-col = -1
-          while new-row.at(prev-col) == () {
-            prev-col -= 1
-          }
-          new-row.at(prev-col).colspan += 1
           col = ()
 
         } else if spec.class == "^" or colstring == "\\^" {
@@ -840,6 +841,7 @@
           col = tablex.cellx(
             align: center + horizon,
             fill: spec.fill,
+            colspan: spec.colspan,
 
             {
               if spec.class in ("_", "-") or colstring in ("_", "\\_") {
@@ -869,6 +871,8 @@
           col = tablex.cellx(
             align: spec.halign + spec.valign,
             fill: spec.fill,
+            colspan: spec.colspan,
+
             pad(..spec.pad, col),
           )
 
@@ -910,18 +914,25 @@
 
         /********************* WIDTH REALIZATION *********************/
         locate(loc => {
-          let adjusted-rows = rows.enumerate().map(row => {
+          let final-eq-width = equalize-width.at(loc)
+          let final-widths = cell-widths.at(loc)
+          let final-rows = rows.enumerate().map(row => {
             let (i, row) = row
             let rowdef = specs.at(calc.min(i, specs.len() - 1))
 
             row.enumerate().map(col => {
               let (j, col) = col
               let spec = rowdef.at(j)
+              let k = str(j)
+              if spec.colspan > 1 {
+                k += "," + str(spec.colspan)
+              }
 
               if type(col) == "dictionary" and "tbl-n" in col {
+                // Align smaller class "N" cells in this column
                 col.content = tbl-cell(spec, {
                   let (cell-left, sep, cell-right) = col.tbl-n
-                  let w = final-widths.at(loc).at(str(j), default: width-default)
+                  let w = final-widths.at(k, default: width-default)
 
                   pad(
                     ..spec.pad,
@@ -939,18 +950,61 @@
             })
           })
 
-          tablex.tablex(
-            columns: cols.enumerate().map(c => {
-              let (j, c) = c
-              if c == "equalize" {
-                equalize-width.at(loc)
-              } else if c == auto {
-                final-widths.at(loc).at(str(j), default: (max: auto)).max
-              } else {
-                c
-              }
-            }),
+          // Freeze all "auto" widths into real lengths
+          let final-cols = cols.enumerate().map(c => {
+            let (j, c) = c
+            if c == auto {
+              final-widths.at(str(j), default: (max: auto)).max
+            } else {
+              c
+            }
+          })
 
+          // Distribute excess width from colspanned cells
+          for (c, e) in final-widths {
+            if "," not in c {
+              continue
+            }
+            let (begin, end) = c.split(",")
+            begin = int(begin)
+            end = int(end)
+            let widths = final-cols.slice(begin, end)
+            if widths.any(w => w == 1fr) {
+              continue
+            }
+            let curr-width = 0pt
+            let eq = 0
+            for width in widths {
+              if width == "equalize" {
+                eq += 1
+                curr-width += final-eq-width
+              } else {
+                curr-width += width
+              }
+            }
+            let diff = (e.max - curr-width) / 1pt
+            if diff <= 0 {
+              continue
+            }
+            for (j, width) in widths.enumerate() {
+              j += begin
+              width += diff * width / (curr-width) * 1pt
+              final-cols.at(j) = width
+            }
+            final-eq-width += eq * diff * final-eq-width / (curr-width) * 1pt
+          }
+
+          // Freeze "equalize" widths into real lengths
+          final-cols = final-cols.map(c => {
+            if c == "equalize" {
+              final-eq-width
+            } else {
+              c
+            }
+          })
+
+          tablex.tablex(
+            columns: final-cols,
             auto-lines: options.auto-lines,
             header-rows: options.header-rows,
             inset: 0pt,
@@ -959,7 +1013,7 @@
 
             ..vlines,
             ..hlines,
-            ..adjusted-rows.flatten(),
+            ..final-rows.flatten(),
           )
         })
       )
