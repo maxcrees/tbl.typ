@@ -726,6 +726,11 @@ is the total number of columns in the table.
 
 - The `nospaces` option is always in effect and cannot be disabled.
 
+- The `nowarn` option is not supported. Typst currently does not support
+  displaying text to standard output or error, except by the use of the
+  `assert` and `panic` functions. As such, `tbl.typ` will halt
+  compilation if any issue is detected.
+
 - The #link-label(`tab`) option may be a multi-character string.
 
 - The #link-label(`stroke`)[`linesize`] option is expected to be a Typst
@@ -762,7 +767,6 @@ is the total number of columns in the table.
 
   - `delim` (#issue(1))
   - `expand` (#issue(2))
-  - `nowarn`
 
 - The following #link(<classes>)[column classifiers] are not currently
   supported:
