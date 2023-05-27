@@ -550,12 +550,12 @@
         tbl-cell(spec, styles => {
           cell-widths.update(d => {
             // w(...) does not care about spans
-            let (k, e) = cell-width-at(d, col)
-            let w = pt-length(min-width-given, styles)
-            let v = w + pt-length(spec.pad.left + spec.pad.right, styles)
-            e.min = calc.max(e.min, w)
-            e.max = calc.max(e.max, v)
-            d.insert(k, e)
+            let (wcol, curr) = cell-width-at(d, col)
+            let width = pt-length(min-width-given, styles)
+            let width-p = width + pt-length(spec.pad.left + spec.pad.right, styles)
+            curr.min = calc.max(curr.min, width)
+            curr.max = calc.max(curr.max, width-p)
+            d.insert(wcol, curr)
             d
           })
         })
@@ -667,7 +667,7 @@
         let (cell-open, cell-close) = CELL-MODES.at(options.mode)
         let align-pos = none
         let sep = []
-        let n = 0
+        let sep-len = 0
 
         if (spec.class == "N"
             and cell != "" // Do nothing if special entry
@@ -675,7 +675,7 @@
         ) {
           // one position AFTER \&
           align-pos = txt-cell.position("\\&")
-          n = "\\&".len()
+          sep-len = "\\&".len()
 
           if align-pos == none {
             // OR rightmost decimalpoint "ADJACENT TO DIGIT"
@@ -685,13 +685,13 @@
 
             if all-pos != () {
               sep = options.decimalpoint
-              n = sep.len()
+              sep-len = sep.len()
 
               for prev-pos in all-pos.rev() {
-                if prev-pos.start + n >= txt-cell.len() {
+                if prev-pos.start + sep-len >= txt-cell.len() {
                   continue
                 }
-                let next-char = txt-cell.slice(prev-pos.start + n, count: 1)
+                let next-char = txt-cell.slice(prev-pos.start + sep-len, count: 1)
                 if next-char.match(regex-raw(`[0-9]`)) != none {
                   align-pos = prev-pos.start
                   break
@@ -705,12 +705,12 @@
                 // OR rightmost digit
                 align-pos = align-pos.last().end
                 sep = []
-                n = 0
+                sep-len = 0
               } else {
                 // OR centered (no digits)
                 align-pos = none
                 sep = []
-                n = 0
+                sep-len = 0
               }
             }
           }
@@ -718,7 +718,7 @@
 
         if align-pos != none {
           let txt-left = txt-cell.slice(0, align-pos)
-          let txt-right = txt-cell.slice(align-pos + n)
+          let txt-right = txt-cell.slice(align-pos + sep-len)
 
           // Hacky as it gets... but necessary to preserve some
           // spacing across the decimalpoint.
@@ -751,9 +751,9 @@
 
       if txt-block {
         cell = locate(loc => {
-          let (_, e) = cell-width-at(cell-widths, col, loc: loc)
-          if e.min != 0pt {
-            box(width: e.min, cell)
+          let (_, curr) = cell-width-at(cell-widths, col, loc: loc)
+          if curr.min != 0pt {
+            box(width: curr.min, cell)
           } else {
             let width = tbl-max-width
             width *= spec.colspan
@@ -775,27 +775,27 @@
         })
       } else {
         tbl-cell(spec, styles => {
-          let w = measure(cell, styles).width
-          let v = w + pt-length(spec.pad.left + spec.pad.right, styles)
+          let width = measure(cell, styles).width
+          let width-p = width + pt-length(spec.pad.left + spec.pad.right, styles)
           if spec.colspan == 1 and cols.at(col) == "equalize" {
-              equalize-width.update(e => calc.max(e, v))
+              equalize-width.update(e => calc.max(e, width-p))
           }
           cell-widths.update(d => {
-            let (k, e) = cell-width-at(d, col, spec: spec)
-            e.max = calc.max(e.max, v)
+            let (wcol, curr) = cell-width-at(d, col, spec: spec)
+            curr.max = calc.max(curr.max, width-p)
 
             if tbl-numeric != none {
               let (cell-left, _, cell-right) = tbl-numeric
               cell-left = measure(cell-left, styles).width
               cell-right = measure(cell-right, styles).width
 
-              e.num-l = calc.max(e.num-l, cell-left)
-              e.num-r = calc.max(e.num-r, cell-right)
+              curr.num-l = calc.max(curr.num-l, cell-left)
+              curr.num-r = calc.max(curr.num-r, cell-right)
             } else if spec.class == "A" {
-              e.alpha = calc.max(e.alpha, w)
+              curr.alpha = calc.max(curr.alpha, width)
             }
 
-            d.insert(k, e)
+            d.insert(wcol, curr)
             d
           })
         })
@@ -929,7 +929,7 @@
           cells.enumerate().map(cell => {
             let (col, cell) = cell
             let spec = rowdef.at(col)
-            let (_, e) = cell-width-at(cell-widths, col, spec: spec)
+            let (_, curr) = cell-width-at(cell-widths, col, spec: spec)
 
             if type(cell) == "dictionary" and "tbl-numeric" in cell {
               // Align smaller class "N" cells in this column
@@ -940,9 +940,9 @@
                   ..spec.pad,
                   stack(
                     dir: ltr,
-                    box(width: e.num-l, align(right, cell-left)),
+                    box(width: curr.num-l, align(right, cell-left)),
                     sep,
-                    box(width: e.num-r, align(left, cell-right)),
+                    box(width: curr.num-r, align(left, cell-right)),
                   )
                 )
               })
@@ -951,7 +951,7 @@
               cell.content = tbl-cell(spec, {
                 pad(
                   ..spec.pad,
-                  box(width: e.alpha, align(left, cell.content)),
+                  box(width: curr.alpha, align(left, cell.content)),
                 )
               })
             }
@@ -961,30 +961,30 @@
         })
 
         // Freeze all "auto" widths into real lengths
-        let cols = cols.enumerate().map(c => {
-          let (j, c) = c
-          if c == auto {
-            cell-widths.at(str(j), default: (max: auto)).max
+        let cols = cols.enumerate().map(col => {
+          let (col, width) = col
+          if width == auto {
+            cell-widths.at(str(col), default: (max: auto)).max
           } else {
-            c
+            width
           }
         })
 
         // Distribute excess width from colspanned cells
-        for (c, e) in cell-widths {
-          if "," not in c {
+        for (col, cell) in cell-widths {
+          if "," not in col {
             continue
           }
-          let (begin, end) = c.split(",")
+          let (begin, end) = col.split(",")
           begin = int(begin)
           end = int(end)
-          let widths = cols.slice(begin, end)
-          if widths.any(w => w == 1fr) {
+          let curr-widths = cols.slice(begin, end)
+          if curr-widths.any(w => w == 1fr) {
             continue
           }
           let curr-width = 0pt
           let eq = 0
-          for width in widths {
+          for width in curr-widths {
             if width == "equalize" {
               eq += 1
               curr-width += equalize-width
@@ -992,24 +992,24 @@
               curr-width += width
             }
           }
-          let diff = (e.max - curr-width) / 1pt
+          let diff = (cell.max - curr-width) / 1pt
           if diff <= 0 {
             continue
           }
-          for (j, width) in widths.enumerate() {
-            j += begin
+          for (col, width) in curr-widths.enumerate() {
+            col += begin
             width += diff * width / (curr-width) * 1pt
-            cols.at(j) = width
+            cols.at(col) = width
           }
           equalize-width += eq * diff * equalize-width / (curr-width) * 1pt
         }
 
         // Freeze "equalize" widths into real lengths
-        cols = cols.map(c => {
-          if c == "equalize" {
+        cols = cols.map(width => {
+          if width == "equalize" {
             equalize-width
           } else {
-            c
+            width
           }
         })
 
