@@ -206,7 +206,7 @@
   [
     #set align(center)
     #set text(size: 1.2em)
-    Version 0.0.1 \
+    Version 0.0.1#text(fill: red)[-25 *(development)*] \
     Max Rees \
     2023
   ]
