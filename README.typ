@@ -237,8 +237,17 @@ manner (i.e. not pixel-for-pixel or bug compatible). Some of these
 features are unique to `tbl.typ` and are not easily reproduced in either
 `table()` or `tablex()` alone.
 
-After importing the library using `#import "tbl.typ"`, the basic format
-of a table when using `tbl.typ` is the following:
+= Usage <usage>
++ Make sure you are using Typst version 0.4.0.
++ Put `tablex.typ` version 0.0.2 in your `TYPST_ROOT`.
++ Add the following code to the top of your `.typ` file:
+
+  ```
+  #import "/tbl.typ"
+  #show: tbl.template
+  ```
+
+The basic format of a table when using `tbl.typ` is the following:
 
 ````
 ```tbl
@@ -263,7 +272,7 @@ The two main components of this syntax are:
 
 #pagebreak(weak: true)
 = Region options <options>
-In addition to the overall #link(<intro>)[table syntax] itself, you may
+In addition to the overall #link(<usage>)[table syntax] itself, you may
 specify _region options_ that control the parsing and styling of the
 table as a whole using a "show-everything" rule prior to the tables you
 would like to control. For example:
@@ -274,6 +283,10 @@ would like to control. For example:
   tab: "|",
 )
 ```
+
+You must provide at least one of these rules somewhere in your document
+before your first table (even if no options are specified); otherwise
+the table(s) will not be rendered.
 
 The following options are recognized:
 
