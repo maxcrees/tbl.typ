@@ -731,10 +731,10 @@ is the total number of columns in the table.
   `assert` and `panic` functions. As such, `tbl.typ` will halt
   compilation if any issue is detected.
 
-- The #link-label(`tab`) option may be a multi-character string.
-
 - The #link-label(`stroke`)[`linesize`] option is expected to be a Typst
   color, length, or stroke; a dimensionless number does not work.
+
+- The #link-label(`tab`) option may be a multi-character string.
 
 - The alignment point of #link-label(`N`)[numerically-centered cells]
   that are in the same column as #link-label(`L`)[left-centered] or
