@@ -231,7 +231,11 @@ tables in Typst using a more terse syntax. This syntax comes from a
 #smallcaps[unix] heritage: the `tbl` preprocessor which designed for use
 with the traditional #troff typesetting system @tbl.1 @tbl.7 @Cherry.
 Important differences between the syntax of traditional `tbl` and
-`tbl.typ` are noted #link(<diff>)[later in this document].
+`tbl.typ` are noted #link(<diff>)[later in this document]. The goal of
+this project is to support many traditional `tbl` features in a sensible
+manner (i.e. not pixel-for-pixel or bug compatible). Some of these
+features are unique to `tbl.typ` and are not easily reproduced in either
+`table()` or `tablex()` alone.
 
 After importing the library using `#import "tbl.typ"`, the basic format
 of a table when using `tbl.typ` is the following:
