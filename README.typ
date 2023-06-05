@@ -206,7 +206,7 @@
   [
     #set align(center)
     #set text(size: 1.2em)
-    Version 0.0.1#text(fill: red)[-25 *(development)*] \
+    Version 0.0.1#text(fill: red)[-32 *(development)*] \
     Max Rees \
     2023
   ]
@@ -813,6 +813,45 @@ is the total number of columns in the table.
 
 - A table data row consisting of only `=` (double horizontal line) is
   not currently supported.
+
+#pagebreak(weak: true)
+= Version history
+- *Unreleased:* last updated Sunday 04 June 2023
+  - _Breaking changes_
+    - Region option `tbl-align` has been renamed to
+      #link-label(`align`). The former is now an undocumented
+      alias for the latter. *This alias will be removed in a
+      future release.*
+    - `tablex.typ` is now pulled from `TYPST_ROOT` rather than
+      relative to the current working directory.
+  - _New features_
+    - New region option: #link-label(`mode`).
+    - New column classifier: `A` (undocumented).
+  - _Bugs fixed_
+    - Fix order of operations for column width measurement, especially
+      for class #link-label(`N`) columns. It is no longer
+      necessary to include spurious #link-label(`e`) modifiers.
+    - #link-label(`w(...)`) column modifier now places a definitive
+      lower bound on the width of the column. (#issue(5))
+    - #link-label(`pad`) region option now accepts underspecified input.
+      (#issue(3))
+    - Fix width of horizontally-spanned cells.
+  - _Improvements_
+    - Clarify error message for malformed text block close.
+    - Clean up and refactor implementation.
+  - _Documentation_
+    - Fix `README` compilation with Typst version 0.4.0.
+    - Align columns in code for example tables to improve legibility.
+    - Annotate a short example table format specification.
+    - Document behavior when fewer table entries are provided than
+      expected columns for a particular row.
+    - Fix width of renderings for example tables.
+    - Clarify lack of `nospaces` and `nowarn` region options.
+    - Expand usage instructions.
+    - Document more differences and extensions.
+
+- *Version 0.0.1:* Friday 19 May 2023
+  - _Initial release_
 
 #pagebreak(weak: true)
 = Examples <examples>
