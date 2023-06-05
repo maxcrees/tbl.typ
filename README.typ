@@ -335,8 +335,8 @@ The following options are recognized:
 
 / *`header-rows`*: The number of rows at the beginning of the table to
   consider part of the "header" for the purposes of
-  #link-label(`repeat-header`). This option is also controlled by `.TH`
-  rows in the table data.
+  #link-label(`repeat-header`). This option is also controlled by
+  #link-label(`.TH`) rows in the table data.
 
   _Default:_ `1`
 
@@ -623,10 +623,10 @@ Some input lines do not represent table rows at all:
   Similarly, `=` (equals sign) in #troff would draw a double horizontal
   line, but this is not currently supported.
 
-- A line consisting of only `.TH` (period + capital T + capital H) is an
-  _end-of-header_ marker. All rows of data that precede it are
-  considered part of the table's header for the purposes of the
-  #link-label(`header-rows`) option. It also sets
+- A line consisting of only `.TH` #label(`.TH`.text) (period +
+  capital T + capital H) is an _end-of-header_ marker. All rows of data
+  that precede it are considered part of the table's header for the
+  purposes of the #link-label(`header-rows`) option. It also sets
   #link-label(`repeat-header`) to `true`. This is only useful if
   #link-label(`breakable`) is also `true` and the table spans multiple
   pages.
