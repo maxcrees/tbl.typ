@@ -800,8 +800,6 @@ is the total number of columns in the table.
 - The following #link(<classes>)[column classifiers] are not currently
   supported:
 
-  - `A` (#strong[a]lphabetic)
-
   - `||` (double vertical line)
 
 - The #link-label(`x`) (e#strong[x]pand) column modifier does not
