@@ -708,6 +708,14 @@ If a table entry consists of any of the following strings alone
 
     #emph[cf. @ex-food.]
 
+  - *`\Rx`* (backslash + capital R + any character `x`): the single
+    character `x` is repeated enough to fill the cell but does *not*
+    touch any adjacent vertical lines, subject to the current column
+    separation.
+
+    #emph[cf. @ex-lines.]
+
+#pagebreak(weak: true)
 == Text blocks
 A table entry can also span multiple input lines by writing it as a
 _text block._ #label("text block") This consists of beginning the entry
@@ -780,11 +788,6 @@ is the total number of columns in the table.
 - An empty entry in the table data must be given even if the cell is
   spanned or contains a horizontal line.
 
-- `\Rx` table entries are not handled. Use the Typst `repeat` element
-  function instead, though this does not work well at the moment without
-  a fully-functioning #link-label(`w(...)`) column modifier (see
-  #link(<issues>)[Known issues]).
-
 #pagebreak(weak: true)
 = Known issues <issues>
 
@@ -827,6 +830,7 @@ is the total number of columns in the table.
   - _New features_
     - New region option: #link-label(`mode`).
     - New column classifier: `A` (undocumented).
+    - New special table entry: `\R`.
   - _Bugs fixed_
     - Fix order of operations for column width measurement, especially
       for class #link-label(`N`) columns. It is no longer
@@ -1113,7 +1117,7 @@ is the total number of columns in the table.
   T}                   |line 4
   T{
     No break here.
-  T}               |   |line 5
+  T}               |\R.|line 5
   ```
 ) <ex-lines>
 

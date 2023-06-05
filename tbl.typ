@@ -661,6 +661,14 @@
       let empty = cell == ""
       cell = cell.replace("\\&", "")
 
+      let rep = cell.match(regex-raw(`^\\R(.)$`))
+      if rep != none {
+        rep = rep.captures.first()
+        cell = "#box(width: 100%, repeat("
+        cell += repr(rep)
+        cell += "))"
+      }
+
       let spec = rowdef.at(col)
       let tbl-numeric = none
 
