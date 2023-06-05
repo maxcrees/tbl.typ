@@ -762,6 +762,11 @@ is the total number of columns in the table.
 - All #link(<mods>)[column modifiers] that expect an argument must
   provide that argument in parentheses.
 
+- The #link-label(`d`) and #link-label(`t`) column modifiers adjust the
+  vertical alignment for all table cells, not just those that are
+  vertically spanned. As a result, the default is more consistently
+  middle alignment (or `horizon` in Typst parlance).
+
 - The #link-label(`o(...)`) column modifier is a `tbl.typ` extension.
 
 - Nothing special needs to be done to use equations within table
