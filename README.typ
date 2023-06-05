@@ -642,8 +642,8 @@ Some input lines do not represent table rows at all:
 - Other lines that begin with `.` (period) in #troff were used as
   _commands_ (_requests_ or _macro invocations_), but this cannot be
   supported for obvious reasons. Any such line is rejected. To have the
-  first cell in a row begin with a period, use a Typst escape like `\.`
-  or put a #smallcaps[space] in front of it.
+  first cell in a row begin with a period, use a Typst escape (e.g.
+  `\.`).
 
 == Table entries
 The string representing the cell content is called the _table entry_.
