@@ -736,9 +736,15 @@ is the total number of columns in the table.
 #pagebreak(weak: true)
 = Differences from traditional `tbl` <diff>
 
-- #link(<options>)[Region options] must be specified using a
-  "show-everything" rule; they cannot be provided within the `raw` block
-  itself.
+- The following features are unique to `tbl.typ`:
+  - *#link(<options>)[Region options]:* #link-label(`align`),
+    #link-label(`font`), #link-label(`header-rows`),
+    #link-label(`leading`), #link-label(`macros`), #link-label(`mode`),
+    #link-label(`pad`), #link-label(`repeat-header`)
+  - *#link(<mods>)[Column modifiers]:* #link-label(`o(...)`)
+
+- Region options must be specified using a "show-everything" rule; they
+  cannot be provided within the `raw` block itself.
 
 - The `nospaces` option is always in effect and cannot be disabled.
 
@@ -759,15 +765,13 @@ is the total number of columns in the table.
   rather than with respect to the widest #link-label(`L`) or
   #link-label(`R`) entry.
 
-- All #link(<mods>)[column modifiers] that expect an argument must
-  provide that argument in parentheses.
+- All column modifiers that expect an argument must provide that
+  argument in parentheses.
 
 - The #link-label(`d`) and #link-label(`t`) column modifiers adjust the
   vertical alignment for all table cells, not just those that are
   vertically spanned. As a result, the default is more consistently
   middle alignment (or `horizon` in Typst parlance).
-
-- The #link-label(`o(...)`) column modifier is a `tbl.typ` extension.
 
 - Nothing special needs to be done to use equations within table
   entries, though #link-label(`N`)[numerically-aligned columns] may
