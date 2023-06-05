@@ -829,7 +829,7 @@ is the total number of columns in the table.
   ]
   tbl.template(
     font: font,
-    center: true,
+    align: center,
     ..args,
     it,
   )
