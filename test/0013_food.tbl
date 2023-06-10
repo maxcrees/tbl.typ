@@ -1,0 +1,19 @@
+Cf(Courier New)  S       S   S
+C              | C       S   S
+C              | C       S   S
+C              | C     | C | C
+C              | C     | C | C
+L              | N     | N | N.
+Composition of Foods
+_
+Food           |Percent by Weight
+\^             |_
+\^             |Protein|Fat|Carbo-
+\^             |\^     |\^ |hydrate
+_
+Apples         |  .4   | .5|13.0
+Halibut        |18.4   |5.2|...
+Lima beans     | 7.5   | .8|22.0
+Milk           | 3.3   |4.0| 5.0
+Mushrooms      | 3.5   | .4| 6.0
+Rye bread      | 9.0   | .6|52.7

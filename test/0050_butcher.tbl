@@ -1,0 +1,7 @@
+c      | c         c         c           c.
+c_1    | a_(11)  | a_(12)  | dots.h    | a_(1 s)
+c_2    | a_(21)  | a_(22)  | dots.h    | a_(2 s)
+dots.v | dots.v  | dots.v  | dots.down | dots.v
+c_s    | a_(s 1) | a_(s 2) | dots.h    | a_(s s)
+_
+       | b_1     | b_2     | dots.h    | b_s

@@ -1,0 +1,10 @@
+Le                Le7 Lw(10).
+The fourth line  |_  |line 1
+of this column   |=  |line 2
+determines       |\_ |line 3
+the column width.|T{
+  This text is too wide to fit into a column of width 17.
+T}                   |line 4
+T{
+  No break here.
+T}               |\R.|line 5

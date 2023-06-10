@@ -132,7 +132,20 @@
   link(label(target), text)
 }
 
-#let example = figure.with(kind: "example", supplement: "Example")
+#let example(path, caption: none, wide: false) = {
+  figure(
+    kind: "example",
+    supplement: "Example",
+    caption: caption,
+    raw(
+      block: true,
+      lang:
+        if wide { "tbl-example-wide" }
+        else { "tbl-example" },
+      read(path).trim("\n")
+    ),
+  )
+}
 #show figure.where(kind: "example"): it => block(
   breakable: false,
 
@@ -858,314 +871,113 @@ is the total number of columns in the table.
 #pagebreak(weak: true)
 = Examples <examples>
 
-#let template = (..args, it) => {
+#let template = (path, it) => {
+  import path: options
+
   block(breakable: false)[
     *The following examples are formatted with these region options:*
 
     #raw(
       block: true,
       lang: none,
-      "#show: tbl.template.with" + repr(args)
+      "#show: tbl.template.with" + repr(options)
     )
   ]
   tbl.template(
     font: font,
     align: center,
-    ..args,
+    ..options,
     it,
   )
 }
 
-#show: template.with(
-  box: true,
-  tab: "|",
-)
+#show: template.with("test/0010.typ")
 
 #example(
+  "test/0010_spans.tbl",
   caption: [adapted from @tbl.7],
-  ```tbl-example
-  Lz     S   | Rt
-  Lt  |  Cb  | ^
-  ^   |  Rz    S.
-  left|      | r
-  l   |center|
-      |     right
-  ```
 ) <ex-spans>
 
 #example(
+  "test/0011_facts.tbl",
+  wide: true,
   caption: [adapted from @Cherry[p. 41]],
-  ```tbl-example-wide
-          C                C                   C
-          L                L                   N.
-  Fact            |Location            |Statistic
-  Largest state   |Alaska              |591,004 sq. mi.
-  Smallest state  |Rhode Island        |1,212 sq. mi.
-  Longest river   |Mississippi-Missouri|3,710 mi.
-  Highest mountain|Mount McKinley, AK  |20,320 ft.
-  Lowest point    |Death Valley, CA    |-- 282 ft.
-  ```
 ) <ex-facts>
 
 #example(
+  "test/0012_software.tbl",
   caption: [adapted from @tbl.7],
-  ```tbl-example
-        R | L
-        R   N.
-  software|version
-  _
-       AFL|2.39b
-      Mutt|1.8.0
-      Ruby|1.8.7.374
-  TeX Live|2015
-  ```
 ) <ex-software>
 
 #example(
+  "test/0013_food.tbl",
   caption: [adapted from @Cherry[p. 43]],
-  ```tbl-example
-  Cf(Courier New)  S       S   S
-  C              | C       S   S
-  C              | C       S   S
-  C              | C     | C | C
-  C              | C     | C | C
-  L              | N     | N | N.
-  Composition of Foods
-  _
-  Food           |Percent by Weight
-  \^             |_
-  \^             |Protein|Fat|Carbo-
-  \^             |\^     |\^ |hydrate
-  _
-  Apples         |  .4   | .5|13.0
-  Halibut        |18.4   |5.2|...
-  Lima beans     | 7.5   | .8|22.0
-  Milk           | 3.3   |4.0| 5.0
-  Mushrooms      | 3.5   | .4| 6.0
-  Rye bread      | 9.0   | .6|52.7
-  ```
 ) <ex-food>
 
 #example(
+  "test/0014_bridges.tbl",
   caption: [adapted from @Cherry[p. 42]],
-  ```tbl-example
-  C                  S                S
-  C                | C              | C
-  L                | L              | N.
-  Major New York Bridges
-  _
-  Bridge           |Designer        |Length
-  _
-  Brooklyn         |J . A . Roebling|1595
-  Manhattan        |G . Lindenthal  |1470
-  Williamsburg     |L . L . Buck    |1600
-  _
-  Queensborough    |Palmer &        |1182
-                   |Hornbostel
-  _
-                   |                |1380
-  Triborough       |O . H . Ammann  |_
-                   |                |383
-  _
-  Bronx Whitestone |O . H . Ammann  |2300
-  Throgs Neck      |O . H . Ammann  |1800
-  _
-  George Washington|O . H . Ammann  |3500
-  ```
 ) <ex-bridges>
 
 #pagebreak(weak: true)
-#show: template.with(
-  tab: "|",
-)
+#show: template.with("test/0020.typ")
 
 #example(
+  "test/0020_align.tbl",
   caption: [adapted from @tbl.7],
-  ```tbl-example
-  rBclB, rcIl.
-  r|center|l
-  ri|ce|le
-  right|c|left
-  ```
 ) <ex-align>
 
 #example(
+  "test/0021_stagger.tbl",
   caption: [adapted from @tbl.1],
-  ```tbl-example
-  Cf(BI) Cf(BI)            Cf(B)
-  C      C                 Cu.
-  n     |n*_#sym.times;_*n|difference
-  1     |1
-  2     |4                |3
-  3     |9                |5
-  4     |16               |7
-  5     |25               |9
-  6     |36               |11
-  ```
 ) <ex-stagger>
 
 #example(
+  "test/0022_stack.tbl",
   caption: [adapted from @Cherry[p. 42]],
-  ```tbl-example
-  C         C
-  N p(-2) | N   |.
-          |Stack
-          |_
-         1|46
-          |_
-         2|23
-          |_
-         3|15
-          |_
-         4|6.5
-          |_
-         5|2.1
-          |_
-  ```
 ) <ex-stack>
 
 #example(
+  "test/0023_numeric.tbl",
   caption: [adapted from @Cherry[p. 37]],
-  ```tbl-example
-  N.
-  13
-  4.2
-  26.4.12
-  26.4. 12
-  26.4 .12
-  abc
-  abc\&
-  43\&3.22
-  749.12
-  ```
 ) <ex-numeric>
 
-#show: template.with(
-  allbox: true,
-  tab: "|",
-)
+#show: template.with("test/0030.typ")
 
 #example(
+  "test/0030_att.tbl",
   caption: [adapted from @Cherry[p. 41]],
-  ```tbl-example
-  C    S      S
-  C    C      C
-  N    N      N.
-  AT&T Common Stock
-  Year|Price |Dividend
-  1984|15-20 |\$1.20
-     5|19-25 |1.20
-     6|21-28 |1.20
-     7|20-36 |1.20
-     8|24-30 |1.20
-     9|29-37 |.30\*
-  ```
 ) <ex-att>
 
 #example(
-  ```tbl-example
-  C b o(luma(85%))
-  C   o(luma(95%)) C.
-  Grade           |Points
-  A               |$ >= 510$
-  B               |$ >= 450$
-  C               |$ >= 390$
-  D               |$ >= 330$
-  ```
+  "test/0031_grade.tbl",
 ) <ex-grade>
 
 #example(
+  "test/0032_rocks.tbl",
   caption: [adapted from @Cherry[p. 44]],
-  ```tbl-example
-  Cf(I)       S               S
-  C           Cw(1in)         Cw(1in)
-  Ltp(9)      Ltp(9)          Ltp(9).
-  New York Area Rocks
-  Era        |Formation      |Age (years)
-  Precambrian|Reading Prong  |>1 billion
-  Paleozoic  |Manhattan Prong|400 million
-  Mesozoic   |T{
-    #set text(hyphenate: true, overhang: true)
-    
-    Newark Basin, incl.
-    Stockton, Lockatong, and Brunswick
-    formations; also Watchungs
-    and Palisades.
-  T}                         |200 million
-  Cenozoic   |Coastal Plain  |T{
-    #set text(hyphenate: true, overhang: true)
-    #set par(justify: true)
-    
-    On Long Island 30,000 years;
-    Cretaceous sediments redeposited
-    by recent glaciation.
-  T}
-  ```
 ) <ex-rocks>
 
 #example(
+  "test/0033_lines.tbl",
+  wide: true,
   caption: [adapted from @tbl.7],
-  ```tbl-example-wide
-  Le                Le7 Lw(10).
-  The fourth line  |_  |line 1
-  of this column   |=  |line 2
-  determines       |\_ |line 3
-  the column width.|T{
-    This text is too wide to fit into a column of width 17.
-  T}                   |line 4
-  T{
-    No break here.
-  T}               |\R.|line 5
-  ```
 ) <ex-lines>
 
 #pagebreak(weak: true)
-#show: template.with(
-  doublebox: true,
-  tab: " : ",
-)
+#show: template.with("test/0040.typ")
 
 #example(
+  "test/0040_read.tbl",
   caption: [adapted from @Cherry[p. 45]],
-  ```tbl-example
-  C b       S       S         S         S
-  C p(-2)   S       S         S         S
-  C       | C     | C       | C       | C
-  C       | C     | C       | C       | C
-  R 2     | N 2   | N 2     | N 2     | N b.
-  Readability of Text
-  Line Width and Leading for 10-Point Type
-  _
-  Line    : Set   : 1-Point : 2-Point : 4-Point
-  Width   : Solid : Leading : Leading : Leading
-  _
-  9 Pica  : 93    : --6.0   : --5.3   : --7.1
-  14 Pica : 450   : --0.6   : --0.3   : --1.7
-  19 Pica : 5     : --5.1   : 0.0     : --2.0
-  31 Pica : 3     : --3.8   : --2.4   : --3.6
-  43 Pica : 5.1   : --90.00 : --5.9   : --8.8
-  ```
 ) <ex-read>
 
-#show: template.with(
-  tab: "|",
-  pad: (bottom: 4pt),
-  mode: "math",
-  stroke: 0.1pt,
-)
+#show: template.with("test/0050.typ")
 
 #example(
+  "test/0050_butcher.tbl",
   caption: [adapted from
   #link("https://discord.com/channels/1054443721975922748/1088371919725793360/1110118908616249435")[Discord]],
-  ```tbl-example
-  c      | c         c         c           c.
-  c_1    | a_(11)  | a_(12)  | dots.h    | a_(1 s)
-  c_2    | a_(21)  | a_(22)  | dots.h    | a_(2 s)
-  dots.v | dots.v  | dots.v  | dots.down | dots.v
-  c_s    | a_(s 1) | a_(s 2) | dots.h    | a_(s s)
-  _
-         | b_1     | b_2     | dots.h    | b_s
-  ```
 ) <ex-butcher>
 
 #pagebreak(weak: true)

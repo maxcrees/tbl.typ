@@ -1,0 +1,16 @@
+C b       S       S         S         S
+C p(-2)   S       S         S         S
+C       | C     | C       | C       | C
+C       | C     | C       | C       | C
+R 2     | N 2   | N 2     | N 2     | N b.
+Readability of Text
+Line Width and Leading for 10-Point Type
+_
+Line    : Set   : 1-Point : 2-Point : 4-Point
+Width   : Solid : Leading : Leading : Leading
+_
+9 Pica  : 93    : --6.0   : --5.3   : --7.1
+14 Pica : 450   : --0.6   : --0.3   : --1.7
+19 Pica : 5     : --5.1   : 0.0     : --2.0
+31 Pica : 3     : --3.8   : --2.4   : --3.6
+43 Pica : 5.1   : --90.00 : --5.9   : --8.8

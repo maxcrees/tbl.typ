@@ -1,0 +1,23 @@
+Cf(I)       S               S
+C           Cw(1in)         Cw(1in)
+Ltp(9)      Ltp(9)          Ltp(9).
+New York Area Rocks
+Era        |Formation      |Age (years)
+Precambrian|Reading Prong  |>1 billion
+Paleozoic  |Manhattan Prong|400 million
+Mesozoic   |T{
+  #set text(hyphenate: true, overhang: true)
+
+  Newark Basin, incl.
+  Stockton, Lockatong, and Brunswick
+  formations; also Watchungs
+  and Palisades.
+T}                         |200 million
+Cenozoic   |Coastal Plain  |T{
+  #set text(hyphenate: true, overhang: true)
+  #set par(justify: true)
+
+  On Long Island 30,000 years;
+  Cretaceous sediments redeposited
+  by recent glaciation.
+T}
