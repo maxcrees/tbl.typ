@@ -219,7 +219,7 @@
   [
     #set align(center)
     #set text(size: 1.2em)
-    Version 0.0.1#text(fill: red)[-32 *(development)*] \
+    Version 0.0.2 \
     Max Rees \
     2023
   ]
@@ -251,7 +251,7 @@ features are unique to `tbl.typ` and are not easily reproduced in either
 `table()` or `tablex()` alone.
 
 = Usage <usage>
-+ Make sure you are using Typst version 0.4.0.
++ Make sure you are using Typst version 0.5.0.
 + Put `tablex.typ` version 0.0.2 and `tbl.typ` in your `TYPST_ROOT`.
 + Add the following code to the top of your `.typ` file:
 
@@ -841,12 +841,12 @@ is the total number of columns in the table.
 
 #pagebreak(weak: true)
 = Version history
-- *Unreleased:* last updated Sunday 04 June 2023
+- *Version 0.0.2:* Saturday 10 June 2023
   - _Breaking changes_
     - Region option `tbl-align` has been renamed to
       #link-label(`align`). The former is now an undocumented
-      alias for the latter. *This alias will be removed in a
-      future release.*
+      alias for the latter. *This alias will be removed in the next
+      release*.
     - `tablex.typ` is now pulled from `TYPST_ROOT` rather than
       relative to the current working directory.
   - _New features_
@@ -867,6 +867,7 @@ is the total number of columns in the table.
   - _Improvements_
     - Clarify error message for malformed text block close.
     - Clean up and refactor implementation.
+    - Add test suite based on existing examples from `README`.
   - _Documentation_
     - Fix `README` compilation with Typst version 0.4.0.
     - Align columns in code for example tables to improve legibility.
