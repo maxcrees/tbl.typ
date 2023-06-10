@@ -1,0 +1,15 @@
+#import "../../tbl.typ": tbl
+#import "options.typ": options
+
+#set page(
+  width: 8.5in,
+  height: auto,
+  margin: (x: 0.5in, y: 0.1in),
+)
+
+#tbl(
+  font: "New Computer Modern",
+  align: center,
+  ..options,
+  read(@PATH_TBL@).trim("\n"),
+)

@@ -1,3 +1,5 @@
 *.pdf
 !README.pdf
+*.png.new
+.DS_Store
 tablex.typ

@@ -891,91 +891,91 @@ is the total number of columns in the table.
   )
 }
 
-#show: template.with("test/0010.typ")
+#show: template.with("test/00/options.typ")
 
 #example(
-  "test/0010_spans.tbl",
+  "test/00/00_spans.tbl",
   caption: [adapted from @tbl.7],
 ) <ex-spans>
 
 #example(
-  "test/0011_facts.tbl",
+  "test/00/01_facts.tbl",
   wide: true,
   caption: [adapted from @Cherry[p. 41]],
 ) <ex-facts>
 
 #example(
-  "test/0012_software.tbl",
+  "test/00/02_software.tbl",
   caption: [adapted from @tbl.7],
 ) <ex-software>
 
 #example(
-  "test/0013_food.tbl",
+  "test/00/03_food.tbl",
   caption: [adapted from @Cherry[p. 43]],
 ) <ex-food>
 
 #example(
-  "test/0014_bridges.tbl",
+  "test/00/04_bridges.tbl",
   caption: [adapted from @Cherry[p. 42]],
 ) <ex-bridges>
 
 #pagebreak(weak: true)
-#show: template.with("test/0020.typ")
+#show: template.with("test/01/options.typ")
 
 #example(
-  "test/0020_align.tbl",
+  "test/01/00_align.tbl",
   caption: [adapted from @tbl.7],
 ) <ex-align>
 
 #example(
-  "test/0021_stagger.tbl",
+  "test/01/01_stagger.tbl",
   caption: [adapted from @tbl.1],
 ) <ex-stagger>
 
 #example(
-  "test/0022_stack.tbl",
+  "test/01/02_stack.tbl",
   caption: [adapted from @Cherry[p. 42]],
 ) <ex-stack>
 
 #example(
-  "test/0023_numeric.tbl",
+  "test/01/03_numeric.tbl",
   caption: [adapted from @Cherry[p. 37]],
 ) <ex-numeric>
 
-#show: template.with("test/0030.typ")
+#show: template.with("test/02/options.typ")
 
 #example(
-  "test/0030_att.tbl",
+  "test/02/00_att.tbl",
   caption: [adapted from @Cherry[p. 41]],
 ) <ex-att>
 
 #example(
-  "test/0031_grade.tbl",
+  "test/02/01_grade.tbl",
 ) <ex-grade>
 
 #example(
-  "test/0032_rocks.tbl",
+  "test/02/02_rocks.tbl",
   caption: [adapted from @Cherry[p. 44]],
 ) <ex-rocks>
 
 #example(
-  "test/0033_lines.tbl",
+  "test/02/03_lines.tbl",
   wide: true,
   caption: [adapted from @tbl.7],
 ) <ex-lines>
 
 #pagebreak(weak: true)
-#show: template.with("test/0040.typ")
+#show: template.with("test/03/options.typ")
 
 #example(
-  "test/0040_read.tbl",
+  "test/03/00_read.tbl",
   caption: [adapted from @Cherry[p. 45]],
 ) <ex-read>
 
-#show: template.with("test/0050.typ")
+#show: template.with("test/04/options.typ")
 
 #example(
-  "test/0050_butcher.tbl",
+  "test/04/00_butcher.tbl",
   caption: [adapted from
   #link("https://discord.com/channels/1054443721975922748/1088371919725793360/1110118908616249435")[Discord]],
 ) <ex-butcher>
