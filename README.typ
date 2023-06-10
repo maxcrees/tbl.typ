@@ -658,6 +658,11 @@ Some input lines do not represent table rows at all:
   first cell in a row begin with a period, use a Typst escape (e.g.
   `\.`).
 
+- Lines that end with `\` <line-continue> (backslash) indicate that the
+  table entry for the current cell continues on the next input line.
+
+  #emph[cf. @ex-facts.]
+
 == Table entries
 The string representing the cell content is called the _table entry_.
 Each table entry is evaluated by the Typst `eval` function. By default,
@@ -842,6 +847,8 @@ is the total number of columns in the table.
     - New region option: #link-label(`mode`).
     - New column classifier: `A` (undocumented).
     - New special table entry: #link-label(`\Rx`).
+    - #link(<line-continue>)[Line continuations] in the table data are
+      now supported.
   - _Bugs fixed_
     - Fix order of operations for column width measurement, especially
       for class #link-label(`N`) columns. It is no longer
@@ -900,7 +907,6 @@ is the total number of columns in the table.
 
 #example(
   "test/00/01_facts.tbl",
-  wide: true,
   caption: [adapted from @Cherry[p. 41]],
 ) <ex-facts>
 

@@ -592,6 +592,9 @@
     txt-block = txt-data.match(regex-raw(`(?s)T\{\n(.*?)\nT\}`))
   }
 
+  // Replace line continuations.
+  txt-data = txt-data.replace("\\\n", "")
+
   for (row, txt-row) in txt-data.split("\n").enumerate() {
     row -= hlines.len()
 
