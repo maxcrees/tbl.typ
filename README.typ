@@ -448,11 +448,9 @@ The following column classifiers are recognized:
 
 / *`C`*: #strong[C]enter align.
 
-/ *`N`*: #strong[N]umerically align.
-
-  All cells with this classifier in the current column are centered with
-  respect to an _alignment point_, which is determined according to the
-  following rules:
+/ *`N`*: #strong[N]umerically align: all cells with this classifier in
+  the current column are centered with respect to an _alignment point_,
+  which is determined according to the following rules:
 
   - One position after the leftmost occurrence of the
     #link-label(`\&`)[_non-printing input token_ `\&`], if any is
@@ -471,7 +469,15 @@ The following column classifiers are recognized:
   column as a whole.
 
   #emph[cf. @ex-software, @ex-food[], @ex-stack[], @ex-numeric[],
-  @ex-att[], @ex-read[].]
+  @ex-alpha[], @ex-att[], @ex-read[].]
+
+/ *`A`*: #strong[A]lphabetically align: in the current column the widest
+  cell with this classifier is centered and the rest with this
+  classifier are left-aligned with respect to that widest cell. These
+  are sometimes called _subcolumns_ because they appear to be indented
+  relative to `L`-classified cells.
+
+  #emph[cf. @ex-alpha.]
 
 / *`S`*: This cell is column-spanned by the previous cell to the left in
   the current row.
@@ -845,7 +851,7 @@ is the total number of columns in the table.
       relative to the current working directory.
   - _New features_
     - New region option: #link-label(`mode`).
-    - New column classifier: `A` (undocumented).
+    - New column classifier: #link-label(`A`).
     - New special table entry: #link-label(`\Rx`).
     - #link(<line-continue>)[Line continuations] in the table data are
       now supported.
@@ -948,6 +954,11 @@ is the total number of columns in the table.
   caption: [adapted from @Cherry[p. 37]],
 ) <ex-numeric>
 
+#example(
+  "test/01/04_alpha.tbl",
+  caption: [adapted from @tbl.1],
+) <ex-alpha>
+
 #show: template.with("test/02/options.typ")
 
 #example(
@@ -970,7 +981,6 @@ is the total number of columns in the table.
   caption: [adapted from @tbl.7],
 ) <ex-lines>
 
-#pagebreak(weak: true)
 #show: template.with("test/03/options.typ")
 
 #example(
@@ -978,6 +988,7 @@ is the total number of columns in the table.
   caption: [adapted from @Cherry[p. 45]],
 ) <ex-read>
 
+#pagebreak(weak: true)
 #show: template.with("test/04/options.typ")
 
 #example(
