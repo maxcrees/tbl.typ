@@ -1,12 +1,12 @@
 TYPST ?= typst
 SUBDIRS := $(wildcard test/[0-9][0-9]/)
 
-check: $(SUBDIRS) $(patsubst %.tbl,%.png,$(wildcard *.tbl))
+test: $(SUBDIRS) $(patsubst %.tbl,%.png,$(wildcard *.tbl))
 
 help:
 	@printf 'Available targets:\n\
 	\n\
-	check   (default) Run only tests that are out-of-date.\n\
+	test    (default) Run only tests that are out-of-date.\n\
 	        -B to run all tests unconditionally.\n\
 	        -j to specify the number of tests to run in parallel.\n\
 	        -k to keep going after a test fails.\n\
@@ -52,4 +52,4 @@ update:
 $(SUBDIRS):
 	@$(MAKE) -C '$@' -f ../../Makefile TEST_DIR='$@'
 
-.PHONY: check help clean reset update $(SUBDIRS)
+.PHONY: test help clean reset update $(SUBDIRS)
