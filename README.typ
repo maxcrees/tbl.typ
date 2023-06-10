@@ -252,7 +252,7 @@ features are unique to `tbl.typ` and are not easily reproduced in either
 
 = Usage <usage>
 + Make sure you are using Typst version 0.4.0.
-+ Put `tablex.typ` version 0.0.2 in your `TYPST_ROOT`.
++ Put `tablex.typ` version 0.0.2 and `tbl.typ` in your `TYPST_ROOT`.
 + Add the following code to the top of your `.typ` file:
 
   ```
