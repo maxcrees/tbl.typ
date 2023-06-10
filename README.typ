@@ -721,10 +721,10 @@ If a table entry consists of any of the following strings alone
 
     #emph[cf. @ex-food.]
 
-  - *`\Rx`* (backslash + capital R + any character `x`): the single
-    character `x` is repeated enough to fill the cell but does *not*
-    touch any adjacent vertical lines, subject to the current column
-    separation.
+  - *`\Rx`* #label(`\Rx`.text) (backslash + capital R + any character
+    `x`): the single character `x` is repeated enough to fill the cell
+    but does *not* touch any adjacent vertical lines, subject to the
+    current column separation.
 
     #emph[cf. @ex-lines.]
 
@@ -841,7 +841,7 @@ is the total number of columns in the table.
   - _New features_
     - New region option: #link-label(`mode`).
     - New column classifier: `A` (undocumented).
-    - New special table entry: `\R`.
+    - New special table entry: #link-label(`\Rx`).
   - _Bugs fixed_
     - Fix order of operations for column width measurement, especially
       for class #link-label(`N`) columns. It is no longer
