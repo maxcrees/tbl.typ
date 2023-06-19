@@ -35,13 +35,15 @@ update:
 		-e 's#@PATH_TBL@#"$<"#g' \
 		../driver.typ.in > '$*.typ'; \
 	mv -f '$@' '$@.old' 2>/dev/null || :; \
-	$(TYPST) compile '$*.typ' '$@'; \
-	mv -f '$@' '$@.new'; \
+	if ! $(TYPST) compile '$*.typ' '$@'; then \
+		rm -f '$@' '$@.new'; \
+	fi; \
+	mv -f '$@' '$@.new' 2>/dev/null || :; \
 	mv -f '$@.old' '$@' 2>/dev/null || :; \
 	rm -f '$*.typ'; \
 	if ! [ -e '$@' ]; then \
 		echo 'MISS $(TEST_DIR)$* (run `make update`?)'; \
-	elif diff -q '$@' '$@.new' >/dev/null; then \
+	elif diff -q '$@' '$@.new' >/dev/null 2>&1; then \
 		echo 'PASS $(TEST_DIR)$*'; \
 		touch '$@'; \
 	else \
