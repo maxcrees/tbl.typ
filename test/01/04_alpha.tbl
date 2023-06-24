@@ -1,11 +1,17 @@
 Cb            S
-L             N, AN, AN, AN, LN, AN, LN.
+L             N
+A             N.
 Daily energy intake (in MJ)
 Macronutrients
 Carbohydrates|4.5
 Fats         |2.25
 Protein      |3
+.T&
+L             N
+A             N.
 Mineral
 Pu-239       |14.6
 _
+.T&
+L             N.
 Total        |\~24.4

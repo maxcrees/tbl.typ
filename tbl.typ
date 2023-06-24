@@ -219,102 +219,11 @@
   }
 }
 
-#let tbl(txt, ..options) = layout(size => {
-  let txt = txt.replace("\r", "")
-
-  // A single period separates the "table data" from the "table format
-  // specifications".
-  let period = txt.position(regex-raw(`[.][ \t]*\n`))
-  assert-ctx(
-    period != none,
-    "Missing table format specification: expected '.'",
-  )
-
-  ////////////////////// TABLE OPTION PARSING //////////////////////
-  let options = options.named()
-  for (name, value) in OPTIONS-DEFAULT.pairs() {
-    if name not in options {
-      options.insert(name, value)
-    }
-  }
-  for (name, value) in options.pairs() {
-    if name in OPTIONS-ALIAS {
-      let mapping = OPTIONS-ALIAS.at(name)
-      if type(mapping) == "dictionary" {
-        options += mapping
-        let _ = options.remove(name)
-      } else if type(mapping) == "string" {
-        options.insert(mapping, value)
-        let _ = options.remove(name)
-      } else {
-        panic("Invalid OPTIONS-ALIAS type", type(mapping))
-      }
-    } else if name == "pad" {
-      let rest = value.at("rest", default: none)
-      for (axis, dirs) in (x: ("left", "right"), y: ("top", "bottom")) {
-        let given-axis = value.at(axis, default: none)
-        for dir in dirs {
-          if dir not in value {
-            value.insert(
-              dir,
-              if given-axis != none { given-axis }
-              else if rest != none { rest }
-              else { OPTIONS-DEFAULT.pad.at(axis) },
-            )
-          }
-        }
-      }
-      options.insert("pad", value)
-    } else if name not in OPTIONS-DEFAULT {
-      panic("Unknown region option '" + name + "'")
-    }
-  }
-  if options.doublebox { options.box = true }
-
-  // "Table format specifications"
-  let txt-specs = txt.slice(0, period).trim()
-  // Array of rows, each containing dictionaries ("column class" and
-  // "column modifiers")
+#let tbl-spec(txt-specs, cols, cell-widths, options) = {
+  let cols = cols
+  let realize = []
   let specs = ()
-
-  // "Table data"
-  let txt-data = txt.slice(period + 1).trim(" ").trim("\n")
-  // Array of rows, each containing an array of content cells
-  let rows = ()
-
-  // Named parameter "columns:" for tablex. Mostly used to track how
-  // many columns are in the table, and which have modifier "e"
-  // ("equalize") or "x" (1fr). The rest are auto, but will be
-  // replaced by real lengths before tablex is called; see
-  // "cell-widths" below.
-  let cols = ()
-
-  // Manually specified vertical and horizontal lines. These are
-  // arrays of tablex.vlinex and tablex.hlinex. The latter also keeps
-  // track of how many lines of input in the txt-data have been
-  // ignored so that we can still properly map each table row into the
-  // correct entry in "specs" above.
   let vlines = ()
-  let hlines = ()
-
-  // Largest width of any cell in any column that has been modified "e".
-  let equalize-width = state("tbl-equalize-width")
-  equalize-width.update(0pt)
-  // Dictionary of column # -> dictionary:
-  //   min:   as specified by modifier "w", EXCLUDING padding
-  //   max:   maximum from all cells in this column, INCLUDING padding
-  //   num-l: maximum from all left halves of class "N" cells in this
-  //          column, EXCLUDING padding
-  //   num-r: same as above, but right halves
-  //
-  //   column # may be "j,n" in which case it applies to column j iff
-  //   colspan == n
-  let cell-widths = state("tbl-cell-widths")
-  cell-widths.update((:))
-  // Maximum possible width of the current table, based on the
-  // container we're in - or the width of the page minus the margins
-  // if there is no container.
-  let tbl-max-width = size.width
 
   ////////////////// TABLE FORMAT / LAYOUT PARSING //////////////////
   // Strip out any column modifier arguments first, since they may
@@ -548,7 +457,7 @@
       }
 
       if min-width-given != none {
-        tbl-cell(spec, styles => {
+        realize += tbl-cell(spec, styles => {
           cell-widths.update(d => {
             // w(...) does not care about spans
             let (wcol, curr) = cell-width-at(d, col)
@@ -569,13 +478,122 @@
     specs.push(new-rowdef)
   }
 
-  specs = specs.map(rowdef => {
-    let missing = cols.len() - rowdef.len()
-    if missing > 0 {
-      rowdef += (SPEC-DEFAULT(options),) * missing
+  return (cols, realize, specs, vlines)
+}
+
+#let tbl(txt, ..options) = layout(size => {
+  let txt = txt.replace("\r", "")
+
+  ////////////////////// TABLE OPTION PARSING //////////////////////
+  let options = options.named()
+  for (name, value) in OPTIONS-DEFAULT.pairs() {
+    if name not in options {
+      options.insert(name, value)
     }
-    rowdef
-  })
+  }
+  for (name, value) in options.pairs() {
+    if name in OPTIONS-ALIAS {
+      let mapping = OPTIONS-ALIAS.at(name)
+      if type(mapping) == "dictionary" {
+        options += mapping
+        let _ = options.remove(name)
+      } else if type(mapping) == "string" {
+        options.insert(mapping, value)
+        let _ = options.remove(name)
+      } else {
+        panic("Invalid OPTIONS-ALIAS type", type(mapping))
+      }
+    } else if name == "pad" {
+      let rest = value.at("rest", default: none)
+      for (axis, dirs) in (x: ("left", "right"), y: ("top", "bottom")) {
+        let given-axis = value.at(axis, default: none)
+        for dir in dirs {
+          if dir not in value {
+            value.insert(
+              dir,
+              if given-axis != none { given-axis }
+              else if rest != none { rest }
+              else { OPTIONS-DEFAULT.pad.at(axis) },
+            )
+          }
+        }
+      }
+      options.insert("pad", value)
+    } else if name not in OPTIONS-DEFAULT {
+      panic("Unknown region option '" + name + "'")
+    }
+  }
+  if options.doublebox { options.box = true }
+
+  // Array of rows, each containing dictionaries ("column class" and
+  // "column modifiers")
+  let specs = ()
+
+  // Array of rows, each containing an entry from `specs` and an array
+  // of content cells
+  let rows = ()
+
+  // Named parameter "columns:" for tablex. Mostly used to track how
+  // many columns are in the table, and which have modifier "e"
+  // ("equalize") or "x" (1fr). The rest are auto, but will be
+  // replaced by real lengths before tablex is called; see
+  // "cell-widths" below.
+  let cols = ()
+
+  // Manually specified vertical and horizontal lines. These are
+  // arrays of tablex.vlinex and tablex.hlinex. The latter also keeps
+  // track of how many lines of input in the txt-data have been
+  // ignored so that we can still properly map each table row into the
+  // correct entry in "specs" above.
+  let vlines = ()
+  let hlines = ()
+
+  // Largest width of any cell in any column that has been modified "e".
+  let equalize-width = state("tbl-equalize-width")
+  equalize-width.update(0pt)
+  // Dictionary of column # -> dictionary:
+  //   min:   as specified by modifier "w", EXCLUDING padding
+  //   max:   maximum from all cells in this column, INCLUDING padding
+  //   num-l: maximum from all left halves of class "N" cells in this
+  //          column, EXCLUDING padding
+  //   num-r: same as above, but right halves
+  //
+  //   column # may be "j,n" in which case it applies to column j iff
+  //   colspan == n
+  let cell-widths = state("tbl-cell-widths")
+  cell-widths.update((:))
+  // Maximum possible width of the current table, based on the
+  // container we're in - or the width of the page minus the margins
+  // if there is no container.
+  let tbl-max-width = size.width
+
+  let found-spec = txt.match(regex-raw(`(?ms)(?:\A|^\.T&\n)(.*?)\.[ \t]*\n`))
+  while found-spec != none {
+    let ret = tbl-spec(
+      found-spec.captures.at(0), // consumed
+      cols,                      // in-out
+      cell-widths,               // modified (state)
+      options,                   // not modified
+    )
+    cols = ret.at(0)
+    ret.at(1) // realize invisible content for state updates etc.
+    specs.push(ret.at(2))
+    vlines += ret.at(3)
+
+    txt = txt.slice(0, found-spec.start) + "#tbl.next\n" + txt.slice(found-spec.end)
+    found-spec = txt.match(regex-raw(`(?ms)^\.T&\n(.*?)\.[ \t]*\n`))
+  }
+  let txt-data = txt
+
+  specs = specs.map(subtable => subtable.map(
+    rowdef => {
+      let missing = cols.len() - rowdef.len()
+      if missing > 0 {
+        rowdef += (SPEC-DEFAULT(options),) * missing
+      }
+      rowdef
+    })
+  )
 
   /////////////////////// TABLE DATA PARSING ///////////////////////
 
@@ -595,6 +613,8 @@
   // Replace line continuations.
   txt-data = txt-data.replace("\\\n", "")
 
+  let subtable = -1
+  let subtable-offset = 0
   for (row, txt-row) in txt-data.split("\n").enumerate() {
     row -= hlines.len()
 
@@ -619,8 +639,11 @@
                       // correct later.
       continue
 
-    } else if txt-row == ".T&" {
-      panic("'.T&' is not supported")
+    } else if txt-row == "#tbl.next" {
+      subtable += 1
+      subtable-offset = row
+      hlines.push(())
+      continue
 
     } else if txt-row.starts-with(".\\\"") {
       // Comment
@@ -630,7 +653,8 @@
       panic("Unsupported command: `" + txt-row + "'")
     }
 
-    let rowdef = specs.at(calc.min(row, specs.len() - 1))
+    let rowdef = specs.at(subtable)
+    rowdef = rowdef.at(calc.min(row - subtable-offset, specs.at(subtable).len() - 1))
     txt-row = txt-row.split(options.tab)
 
     let missing = rowdef.len() - txt-row.len()
@@ -832,10 +856,10 @@
 
         // Find origin cell for this spanned one in current column
         let prev-row = -1
-        while rows.at(prev-row).at(col) == () {
+        while rows.at(prev-row).at(1).at(col) == () {
           prev-row -= 1
         }
-        rows.at(prev-row).at(col).rowspan += 1
+        rows.at(prev-row).at(1).at(col).rowspan += 1
         cell = ()
 
       } else if (spec.class in ("_", "-", "=")
@@ -901,7 +925,7 @@
 
       new-row.push(cell)
     }
-    rows.push(new-row)
+    rows.push((rowdef, new-row))
   }
 
   ///////////////////////// LINE REALIZATION /////////////////////////
@@ -936,7 +960,7 @@
         let cell-widths = cell-widths.at(loc)
         let rows = rows.enumerate().map(row => {
           let (row, cells) = row
-          let rowdef = specs.at(calc.min(row, specs.len() - 1))
+          let (rowdef, cells) = cells
 
           cells.enumerate().map(cell => {
             let (col, cell) = cell
