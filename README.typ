@@ -632,7 +632,7 @@ If a row provides fewer entries than there are columns in the table at
 that point, then the remaining columns are assumed to be empty. It is an
 error to provide more entries in a row than there are columns.
 
-== Special input lines
+== Special input lines <special-line>
 Some input lines do not represent table rows at all. Leading and
 trailing whitespace will prevent the special interpretation of these
 input lines.
@@ -851,6 +851,13 @@ is the total number of columns in the table.
     - The #link-label(`.T&`) command is now supported which allows
       changing the table format specifications in the middle of the
       table data. (#issue(4))
+  - _Bugs fixed_
+    - Test cases that fail to compile are now properly marked as
+      failures.
+  - _Documentation_
+    - The behavior of whitespace with respect to
+      #link(<special-line>)[special input lines] has been clarified.
+
 - *Version 0.0.2:* Saturday 10 June 2023
   - _Breaking changes_
     - Region option `tbl-align` has been renamed to
