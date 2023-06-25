@@ -273,6 +273,7 @@ The two main components of this syntax are:
 
 - #link(<specs>)[_Format specifications_]. This describes the layout of
   the table in terms of the number and style of columns for each row.
+  They can be changed later using the #link-label(`.T&`) command.
 
   The last line of the format specifications must end in a period (`.`).
   This is the separator between the two sections.
@@ -414,7 +415,8 @@ have however many #link-label(`L`) columns at the end to complete the
 row.
 
 The last row definition in the format specifications determines the
-layout of that row and all rows for the rest of the table.
+layout of that row and all subsequent rows until the next
+#link-label(`.T&`) command or the end of the table if there is none.
 
 Spaces and tabs between any column classifiers or column modifiers are
 ignored. Column classifier letters and column modifier letters can be
@@ -650,10 +652,15 @@ Some input lines do not represent table rows at all:
   #link-label(`breakable`) is also `true` and the table spans multiple
   pages.
 
-- A line consisting of only `.T&` (period + capital T + ampersand) in
-  #troff marks the beginning of a new set of format specifications to be
-  terminated by `.` and more table data to follow, but this is not
-  currently supported.
+- A line consisting of only `.T&` #label(`.T&`.text) (period + capital T
+  \+ ampersand) begins a new section of #link(<specs>)[format
+  specifications] that is terminated by a trailing period.
+
+  The last row definition in the new format specifications determines
+  the layout of that row and all subsequent rows until the next `.T&` or
+  the end of the table.
+
+  #emph[cf. @ex-alpha.]
 
 - Lines that begin with `.\"` (period + backslash + double quote) are
   treated as comments and completely ignored.
@@ -700,7 +707,6 @@ There are a few important caveats:
   (backslash-ampersand; known as the _non-printing input token_) in the
   table entry are removed.
 
-#pagebreak(weak: true)
 == Special table entries
 If a table entry consists of any of the following strings alone
 (ignoring any spaces or tabs), then they gain a special meaning:
@@ -830,17 +836,18 @@ is the total number of columns in the table.
   currently constrain the width of text blocks like it should.
   (#issue(7))
 
-- `.T&` in the #link(<data>)[table data] is not currently supported.
-  (#issue(4))
-
 - Within text blocks, `.\"` comments are not removed, and other #troff
   commands are not rejected. (#issue(6))
 
 - A table data row consisting of only `=` (double horizontal line) is
   not currently supported.
 
-#pagebreak(weak: true)
 = Version history
+- *Unreleased:* last updated Sunday 25 June 2023
+  - _New features_
+    - The #link-label(`.T&`) command is now supported which allows
+      changing the table format specifications in the middle of the
+      table data. (#issue(4))
 - *Version 0.0.2:* Saturday 10 June 2023
   - _Breaking changes_
     - Region option `tbl-align` has been renamed to
