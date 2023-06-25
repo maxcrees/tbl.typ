@@ -219,6 +219,7 @@
   [
     #set align(center)
     #set text(size: 1.2em)
+    #link("https://maxre.es/tbl.typ/")[maxre.es/tbl.typ] \
     Version 0.0.2 \
     Max Rees \
     2023
