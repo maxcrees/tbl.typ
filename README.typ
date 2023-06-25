@@ -633,7 +633,9 @@ that point, then the remaining columns are assumed to be empty. It is an
 error to provide more entries in a row than there are columns.
 
 == Special input lines
-Some input lines do not represent table rows at all:
+Some input lines do not represent table rows at all. Leading and
+trailing whitespace will prevent the special interpretation of these
+input lines.
 
 - A line consisting of only `_` (underscore) draws a horizontal line at
   that position in the table. This is only useful if
