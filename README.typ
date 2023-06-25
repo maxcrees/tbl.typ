@@ -111,8 +111,8 @@
 #let TK = strong(text(fill: red)[TK])
 #let troff = smallcaps[troff]
 #let issue(num) = link(
-  "https://github.com/sroracle/tbl.typ/issues/" + str(num),
-  [GH\##num],
+  "https://github.com/maxcrees/tbl.typ/issues/" + str(num),
+  [GH-#num],
 )
 #let link-label(target, ..text) = {
   text = text.pos()
