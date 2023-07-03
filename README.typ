@@ -252,12 +252,13 @@ features are unique to `tbl.typ` and are not easily reproduced in either
 `table()` or `tablex()` alone.
 
 = Usage <usage>
-+ Make sure you are using Typst version 0.5.0.
-+ Put `tablex.typ` version 0.0.2 and `tbl.typ` in your `TYPST_ROOT`.
++ Make sure you are using Typst version 0.6.0.
++ Put `tbl.typ` in your #link("https://github.com/typst/packages#local-packages")[
+  local package repository].
 + Add the following code to the top of your `.typ` file:
 
   ```
-  #import "/tbl.typ"
+  #import "@local/tbl:0.0.3"
   #show: tbl.template
   ```
 

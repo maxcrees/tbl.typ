@@ -20,7 +20,7 @@ Many other features exist to condense common configurations to a concise syntax.
 For example:
 
 ````
-#import "/tbl.typ"
+#import "@local/tbl:0.0.3"
 #show: tbl.template.with(box: true, tab: "|")
 
 ```tbl

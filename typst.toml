@@ -1,0 +1,8 @@
+[package]
+name = "tbl"
+version = "0.0.3"
+entrypoint = "tbl.typ"
+authors = ["Max Rees"]
+license = "MPL-2.0"
+description = "A tbl-like preprocessor for Typst and tablex"
+repository = "https://github.com/maxcrees/tbl.typ"
