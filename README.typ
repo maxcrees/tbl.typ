@@ -811,10 +811,13 @@ is the total number of columns in the table.
 
 - The following features are unique to `tbl.typ`:
   - *#link(<options>)[Region options]:* #link-label(`align`),
+    #link-label(`bg`), #link-label(`colors`), #link-label(`fg`),
     #link-label(`font`), #link-label(`header-rows`),
     #link-label(`leading`), #link-label(`macros`), #link-label(`mode`),
-    #link-label(`pad`), #link-label(`repeat-header`)
-  - *#link(<mods>)[Column modifiers]:* #link-label(`k(...)`)
+    #link-label(`pad`), #link-label(`size`),
+    #link-label(`repeat-header`)
+  - *#link(<mods>)[Column modifiers]:* #link-label(`k(...)`),
+    #link-label(`o(...)`)
 
 - Region options must be specified using a "show-everything" rule; they
   cannot be provided within the `raw` block itself.
