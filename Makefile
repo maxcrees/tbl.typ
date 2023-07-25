@@ -52,6 +52,8 @@ update:
 	fi;
 
 $(SUBDIRS):
-	@$(MAKE) -C '$@' -f ../../Makefile TEST_DIR='$@'
+	@$(MAKE) -C '$@' -f ../../Makefile \
+		TYPST_ROOT='$(CURDIR)' \
+		TEST_DIR='$@'
 
 .PHONY: test help clean reset update $(SUBDIRS)
