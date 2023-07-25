@@ -890,8 +890,8 @@ is the total number of columns in the table.
     - New region options: #link-label(`bg`), #link-label(`colors`),
       #link-label(`fg`), and #link-label(`size`).
   - _Bugs fixed_
-    - Test cases that fail to compile are now properly marked as
-      failures.
+    - Test cases that fail to compile or are missing now cause `make` to
+      return with a non-zero exit status.
     - The test suite now operates correctly with Typst 0.6.0.
   - _Improvements_
     - A `typst.toml` file is provided to use `tbl.typ` as a local

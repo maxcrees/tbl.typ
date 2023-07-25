@@ -43,6 +43,7 @@ update:
 	rm -f '$*.typ'; \
 	if ! [ -e '$@' ]; then \
 		echo 'MISS $(TEST_DIR)$* (run `make update`?)'; \
+		exit 1; \
 	elif diff -q '$@' '$@.new' >/dev/null 2>&1; then \
 		echo 'PASS $(TEST_DIR)$*'; \
 		touch '$@'; \
