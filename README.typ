@@ -315,7 +315,7 @@ The following options are recognized:
   `tablex`.
 
   _Default:_ `false` \
-  #emph[cf. @ex-att, @ex-grade[], @ex-rocks[], @ex-lines[].]
+  #emph[cf. @ex-att, @ex-rocks[], @ex-lines[], @ex-grade[].]
 
 / *`bg`*: The background color for the table cells. Can be overridden
   later by the #link-label(`k(...)`) column modifier.
@@ -339,7 +339,8 @@ The following options are recognized:
 / *`colors`*: An array of colors for shorthand use with the
   #link-label(`k(...)`) column modifier.
 
-  _Default:_ `()`
+  _Default:_ `()` \
+  #emph[cf. @ex-grade.]
 
 / *`decimalpoint`*: The string used to separate the integral part of a
   number from the fractional part. Used in #link-label(`N`)-classified
@@ -352,6 +353,11 @@ The following options are recognized:
 
   _Default:_ `false` \
   #emph[cf. @ex-read.]
+
+/ *`fg`*: The foreground (text) color for the table cells. Can be
+  overridden later by the #link-label(`o(...)`) column modifier.
+
+  _Default:_ `auto` (the text color is the same as the surrounding text)
 
 / *`font`*: The font family for the table. Can be overridden later by
   the #link-label(`f(...)`) column modifier.
@@ -556,7 +562,7 @@ The following column modifiers are recognized:
 / *`k(...)`*: Bac#strong[k]ground for the cell is given in parentheses,
   evaluated as Typst code. The default is controlled by the
   #link-label(`bg`) region option. This can also be an integer
-  representing an index into the `colors` region option.
+  representing an index into the #link-label(`colors`) region option.
 
   #emph[cf. @ex-grade.]
 
@@ -567,6 +573,13 @@ The following column modifiers are recognized:
   The macro currently only receives a single argument: the content of
   the cell. A future version may also pass the position of the cell in
   terms of row number and column number.
+
+/ *`o(...)`*: F#strong[o]reground color for the cell is given in
+  parentheses, evaluated as Typst code. The default is controlled by the
+  #link-label(`fg`) region option. This can also be an integer
+  representing an index into the #link-label(`colors`) region option.
+
+  #emph[cf. @ex-grade.]
 
 / *`p(...)`*: #strong[P]oint size of the font is modified according to
   the argument in parentheses.
@@ -768,7 +781,6 @@ If a table entry consists of any of the following strings alone
 
     #emph[cf. @ex-lines.]
 
-#pagebreak(weak: true)
 == Text blocks
 A table entry can also span multiple input lines by writing it as a
 _text block._ #label("text block") This consists of beginning the entry
@@ -867,11 +879,16 @@ is the total number of columns in the table.
 
 = Version history
 - *Unreleased:* last updated Sunday 25 June 2023
+  - _Breaking changes_
+    - The #link-label(`o(...)`) column modifier is now the cell
+      f#strong[o]reground color. Use #link-label(`k(...)`) to change the
+      bac#strong[k]ground color.
   - _New features_
     - The #link-label(`.T&`) command is now supported which allows
       changing the table format specifications in the middle of the
       table data. (#issue(4))
-    - The #link-label(`size`) region option has been added.
+    - New region options: #link-label(`bg`), #link-label(`colors`),
+      #link-label(`fg`), and #link-label(`size`).
   - _Bugs fixed_
     - Test cases that fail to compile are now properly marked as
       failures.
@@ -885,6 +902,7 @@ is the total number of columns in the table.
     - The behavior of whitespace with respect to
       #link(<special-line>)[special input lines] has been clarified.
 
+#pagebreak(weak: true)
 - *Version 0.0.2:* Saturday 10 June 2023
   - _Breaking changes_
     - Region option `tbl-align` has been renamed to
@@ -1012,10 +1030,6 @@ is the total number of columns in the table.
 ) <ex-att>
 
 #example(
-  "test/02/01_grade.tbl",
-) <ex-grade>
-
-#example(
   "test/02/02_rocks.tbl",
   caption: [adapted from @Cherry[p. 44]],
 ) <ex-rocks>
@@ -1025,6 +1039,13 @@ is the total number of columns in the table.
   wide: true,
   caption: [adapted from @tbl.7],
 ) <ex-lines>
+
+#pagebreak(weak: true)
+#show: template.with("test/05/options.typ")
+
+#example(
+  "test/05/00_grade.tbl",
+) <ex-grade>
 
 #show: template.with("test/03/options.typ")
 

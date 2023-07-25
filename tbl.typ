@@ -26,6 +26,7 @@
   bg: auto,
   breakable: false,
   colors: (),
+  fg: auto,
   leading: 0.65em,
   macros: (:),
   mode: "content",
@@ -57,6 +58,7 @@
   bg: options.bg,
   bold: false,
   colspan: 1,
+  fg: options.fg,
   font: options.font,
   halign: left,
   ignore: false,
@@ -217,6 +219,9 @@
     if spec.italic {
       it = emph(it)
     }
+    if spec.fg != auto {
+      it = text(fill: spec.fg, it)
+    }
 
     it
   }
@@ -370,13 +375,13 @@
 
       for mod in txt-mods.clusters() {
         assert-ctx(
-          mod in " bdefikmptuvwxz".clusters(),
+          mod in " bdefikmoptuvwxz".clusters(),
           "Column modifier '" + mod + "' is not supported",
           row: row,
           col: col,
         )
 
-        if mod in "fkmpvw".clusters() {
+        if mod in "fkmopvw".clusters() {
           assert-ctx(
             mod in args,
             "Missing argument for column modifier '" + mod + "'",
@@ -437,6 +442,12 @@
             col: col,
           )
           spec.macro = options.macros.at(arg)
+
+        } else if mod == "o" {
+          spec.fg = tbl-color(
+            options.colors,
+            args.o.remove(0),
+          )
 
         } else if mod == "p" {
           spec.size = coerce-unit(
