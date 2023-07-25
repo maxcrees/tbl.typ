@@ -317,6 +317,11 @@ The following options are recognized:
   _Default:_ `false` \
   #emph[cf. @ex-att, @ex-grade[], @ex-rocks[], @ex-lines[].]
 
+/ *`bg`*: The background color for the table cells. Can be overridden
+  later by the #link-label(`k(...)`) column modifier.
+
+  _Default:_ `auto` (transparent)
+
 / *`box`*, \ `frame`: If `true`, draw a line around the entire table.
 
   _Default:_ `false` \
@@ -330,6 +335,11 @@ The following options are recognized:
 
 / *`center`*, \ `centre`: Aliases for a #link-label(`align`) value of
   `center`.
+
+/ *`colors`*: An array of colors for shorthand use with the
+  #link-label(`k(...)`) column modifier.
+
+  _Default:_ `()`
 
 / *`decimalpoint`*: The string used to separate the integral part of a
   number from the fractional part. Used in #link-label(`N`)-classified
@@ -543,6 +553,13 @@ The following column modifiers are recognized:
 / *`i`*: #strong[I]talicize text using the Typst `emph` element
   function.
 
+/ *`k(...)`*: Bac#strong[k]ground for the cell is given in parentheses,
+  evaluated as Typst code. The default is controlled by the
+  #link-label(`bg`) region option. This can also be an integer
+  representing an index into the `colors` region option.
+
+  #emph[cf. @ex-grade.]
+
 / *`m(...)`*: #strong[M]acro (function) to apply to each corresponding
   cell. The macros must be scoped using the #link-label(`macros`) region
   option.
@@ -550,10 +567,6 @@ The following column modifiers are recognized:
   The macro currently only receives a single argument: the content of
   the cell. A future version may also pass the position of the cell in
   terms of row number and column number.
-
-/ *`o(...)`*: Fill c#strong[o]lor for the cell is given in parentheses.
-
-  #emph[cf. @ex-grade.]
 
 / *`p(...)`*: #strong[P]oint size of the font is modified according to
   the argument in parentheses.
@@ -789,7 +802,7 @@ is the total number of columns in the table.
     #link-label(`font`), #link-label(`header-rows`),
     #link-label(`leading`), #link-label(`macros`), #link-label(`mode`),
     #link-label(`pad`), #link-label(`repeat-header`)
-  - *#link(<mods>)[Column modifiers]:* #link-label(`o(...)`)
+  - *#link(<mods>)[Column modifiers]:* #link-label(`k(...)`)
 
 - Region options must be specified using a "show-everything" rule; they
   cannot be provided within the `raw` block itself.

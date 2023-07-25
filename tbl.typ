@@ -23,7 +23,9 @@
 
   // tbl.typ
   align: left,
+  bg: auto,
   breakable: false,
+  colors: (),
   leading: 0.65em,
   macros: (:),
   mode: "content",
@@ -52,9 +54,9 @@
 #let SPEC-DEFAULT(options) = {(
   class: "L",
 
+  bg: options.bg,
   bold: false,
   colspan: 1,
-  fill: auto,
   font: options.font,
   halign: left,
   ignore: false,
@@ -220,6 +222,14 @@
   }
 }
 
+#let tbl-color(colors, it) = {
+  if it.match(regex-raw(`^[0-9]+$`)) != none {
+    colors.at(int(it))
+  } else {
+    eval(it)
+  }
+}
+
 #let tbl-spec(txt-specs, cols, cell-widths, options) = {
   let cols = cols
   let realize = []
@@ -360,13 +370,13 @@
 
       for mod in txt-mods.clusters() {
         assert-ctx(
-          mod in " bdefimoptuvwxz".clusters(),
+          mod in " bdefikmptuvwxz".clusters(),
           "Column modifier '" + mod + "' is not supported",
           row: row,
           col: col,
         )
 
-        if mod in "fmopvw".clusters() {
+        if mod in "fkmpvw".clusters() {
           assert-ctx(
             mod in args,
             "Missing argument for column modifier '" + mod + "'",
@@ -412,6 +422,12 @@
         } else if mod == "i" {
           spec.italic = true
 
+        } else if mod == "k" {
+          spec.bg = tbl-color(
+            options.colors,
+            args.k.remove(0),
+          )
+
         } else if mod == "m" {
           arg = args.m.remove(0)
           assert-ctx(
@@ -421,9 +437,6 @@
             col: col,
           )
           spec.macro = options.macros.at(arg)
-
-        } else if mod == "o" {
-          spec.fill = eval(args.o.remove(0))
 
         } else if mod == "p" {
           spec.size = coerce-unit(
@@ -882,7 +895,7 @@
 
         cell = tablex.cellx(
           align: center + horizon,
-          fill: spec.fill,
+          fill: spec.bg,
           colspan: spec.colspan,
 
           {
@@ -912,7 +925,7 @@
       } else if spec.class in ("L", "C", "R", "N", "A") {
         cell = tablex.cellx(
           align: spec.halign + spec.valign,
-          fill: spec.fill,
+          fill: spec.bg,
           colspan: spec.colspan,
 
           if spec.class == "A" { cell }
