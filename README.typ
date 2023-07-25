@@ -343,8 +343,8 @@ The following options are recognized:
   _Default:_ `false` \
   #emph[cf. @ex-read.]
 
-/ *`font`*: The font for the table. Can be overridden later by the
-  #link-label(`f(...)`) column modifier.
+/ *`font`*: The font family for the table. Can be overridden later by
+  the #link-label(`f(...)`) column modifier.
 
   _Default:_ `"Times"` \
   _n.b. all tables in this document are formatted with the #font font._
@@ -385,6 +385,11 @@ The following options are recognized:
   page. This option is also controlled by `.TH` rows in the table data.
 
   _Default:_ `false`
+
+/ *`size`*: The font size for the table. Can be overridden later by the
+  #link-label(`p(...)`) column modifier.
+
+  _Default:_ `1em`
 
 / *`stroke`*, \ `linesize`: How to draw all lines in the table.
 
@@ -554,7 +559,8 @@ The following column modifiers are recognized:
   the argument in parentheses.
 
   If the argument begins with a `+` or `-`, then the argument is added
-  or subtracted respectively with respect to the current size.
+  or subtracted with respect to the current font size for the column,
+  which is initialized with the #link-label(`size`) region option.
 
   The argument may be suffixed by a unit. If no unit is specified, `pt`
   is assumed. Valid units are:
@@ -852,6 +858,7 @@ is the total number of columns in the table.
     - The #link-label(`.T&`) command is now supported which allows
       changing the table format specifications in the middle of the
       table data. (#issue(4))
+    - The #link-label(`size`) region option has been added.
   - _Bugs fixed_
     - Test cases that fail to compile are now properly marked as
       failures.

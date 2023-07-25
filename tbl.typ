@@ -28,6 +28,7 @@
   macros: (:),
   mode: "content",
   pad: (x: 0.75em, y: 3pt),
+  size: 1em,
 
   // tablex.typ
   auto-lines: false,
@@ -62,7 +63,7 @@
   macro: none,
   origin: none,
   pad: options.pad,
-  size: 1em,
+  size: options.size,
   stagger: false,
   valign: horizon,
 )}
