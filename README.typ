@@ -862,6 +862,12 @@ is the total number of columns in the table.
   - _Bugs fixed_
     - Test cases that fail to compile are now properly marked as
       failures.
+    - The test suite now operates correctly with Typst 0.6.0.
+  - _Improvements_
+    - A `typst.toml` file is provided to use `tbl.typ` as a local
+      package. Submission to the Typst package repository is pending for
+      the next release.
+    - `tablex` is now imported as a Typst 0.6.0 package.
   - _Documentation_
     - The behavior of whitespace with respect to
       #link(<special-line>)[special input lines] has been clarified.
