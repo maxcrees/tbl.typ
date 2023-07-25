@@ -48,7 +48,6 @@
   frame: "box",
   linesize: "stroke",
   nokeep: "breakable",
-  tbl-align: "align", // TODO remove in v0.0.2+1
 )
 
 // "Column descriptors"

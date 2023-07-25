@@ -220,7 +220,7 @@
     #set align(center)
     #set text(size: 1.2em)
     #link("https://maxre.es/tbl.typ/")[maxre.es/tbl.typ] \
-    Version 0.0.2 \
+    Version 0.0.3-alpha20230725 \
     Max Rees \
     2023
   ]
@@ -881,11 +881,13 @@ is the total number of columns in the table.
   not currently supported.
 
 = Version history
-- *Unreleased:* last updated Sunday 25 June 2023
+- *Unreleased:* last updated Tuesday 25 July 2023
   - _Breaking changes_
     - The #link-label(`o(...)`) column modifier is now the cell
       f#strong[o]reground color. Use #link-label(`k(...)`) to change the
       bac#strong[k]ground color.
+    - The `tbl-align` alias for the #link-label(`align`) region option,
+      deprecated since version 0.0.2, has been removed.
   - _New features_
     - The #link-label(`.T&`) command is now supported which allows
       changing the table format specifications in the middle of the
