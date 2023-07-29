@@ -220,7 +220,7 @@
     #set align(center)
     #set text(size: 1.2em)
     #link("https://maxre.es/tbl.typ/")[maxre.es/tbl.typ] \
-    Version 0.0.3-alpha20230725 \
+    Version 0.0.3 \
     Max Rees \
     2023
   ]
@@ -253,12 +253,10 @@ features are unique to `tbl.typ` and are not easily reproduced in either
 
 = Usage <usage>
 + Make sure you are using Typst version 0.6.0.
-+ Put `tbl.typ` in your #link("https://github.com/typst/packages#local-packages")[
-  local package repository].
 + Add the following code to the top of your `.typ` file:
 
   ```
-  #import "@local/tbl:0.0.3"
+  #import "@preview/tbl:0.0.3"
   #show: tbl.template
   ```
 
@@ -889,7 +887,7 @@ is the total number of columns in the table.
   not currently supported.
 
 = Version history
-- *Unreleased:* last updated Tuesday 25 July 2023
+- *Version 0.0.3:* Saturday 29 July 2023
   - _Breaking changes_
     - The #link-label(`o(...)`) column modifier is now the cell
       f#strong[o]reground color. Use #link-label(`k(...)`) to change the
@@ -907,9 +905,7 @@ is the total number of columns in the table.
       return with a non-zero exit status.
     - The test suite now operates correctly with Typst 0.6.0.
   - _Improvements_
-    - A `typst.toml` file is provided to use `tbl.typ` as a local
-      package. Submission to the Typst package repository is pending for
-      the next release.
+    - `tbl.typ` has been submitted to the Typst package repository.
     - `tablex` is now imported as a Typst 0.6.0 package.
   - _Documentation_
     - The behavior of whitespace with respect to

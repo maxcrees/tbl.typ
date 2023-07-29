@@ -4,5 +4,5 @@ version = "0.0.3"
 entrypoint = "tbl.typ"
 authors = ["Max Rees"]
 license = "MPL-2.0"
-description = "A tbl-like preprocessor for Typst and tablex"
+description = "Complex tables, written concisely"
 repository = "https://github.com/maxcrees/tbl.typ"
