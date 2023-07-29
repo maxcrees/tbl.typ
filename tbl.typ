@@ -288,7 +288,7 @@
   txt-specs = txt-specs.split(regex-raw(`[,\n]+`)).enumerate()
   for (row, txt-row) in txt-specs {
     let vline-end = if row == txt-specs.len() - 1 {
-      none
+      auto
     } else {
       row + 1
     }
@@ -602,7 +602,7 @@
     cols = ret.at(0)
     ret.at(1) // realize invisible content for state updates etc.
     specs.push(ret.at(2))
-    vlines += ret.at(3)
+    vlines.push(ret.at(3))
 
     txt = txt.slice(0, found-spec.start) + "#tbl.next\n" + txt.slice(found-spec.end)
     found-spec = txt.match(regex-raw(`(?ms)^\.T&\n(.*?)\.[ \t]*\n`))
@@ -664,8 +664,17 @@
       continue
 
     } else if txt-row == "#tbl.next" {
+      vlines.at(subtable) = vlines.at(subtable).map(vline => {
+        if vline.end == auto and subtable > -1 { vline.end = row }
+        vline
+      })
       subtable += 1
       subtable-offset = row
+      vlines.at(subtable) = vlines.at(subtable).map(vline => {
+        vline.start += subtable-offset
+        if vline.end != auto { vline.end += subtable-offset }
+        vline
+      })
       hlines.push(())
       continue
 
@@ -953,6 +962,9 @@
   }
 
   ///////////////////////// LINE REALIZATION /////////////////////////
+
+  vlines = vlines.flatten()
+
   if options.box and not options.auto-lines {
     hlines += (
       tablex.hlinex(y: 0),
