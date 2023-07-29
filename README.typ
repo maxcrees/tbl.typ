@@ -432,10 +432,10 @@ the table. The classifier may be followed by any number of
 arguments enclosed in parentheses.
 
 The total number of columns in the table is determined by the row
-definition with the largest number of columns specified. Any row
-definitions that have fewer columns than this maximum are assumed to
-have however many #link-label(`L`) columns at the end to complete the
-row.
+definition with the largest number of columns specified.
+<inferred-columns> Any row definitions that have fewer columns than this
+maximum are assumed to have however many #link-label(`L`) columns at the
+end to complete the row.
 
 The last row definition in the format specifications determines the
 layout of that row and all subsequent rows until the next
@@ -852,6 +852,14 @@ is the total number of columns in the table.
 - Nothing special needs to be done to use equations within table
   entries, though #link-label(`N`)[numerically-aligned columns] may
   behave unexpectedly until the `delim` option is implemented.
+
+- The #link-label(`.T&`) command may increase the total number of
+  columns in the table arbitrarily. The parts of the table that did
+  not specify these new columns will have the columns added as empty
+  left-aligned cells on the right-hand side of the table. This ensures
+  that the shape of the overall table is always rectangular and is
+  consistent with #link(<inferred-columns>)[inferred column
+  specifications] within a given set of format specifications.
 
 - An empty entry in the table data must be given even if the cell is
   spanned or contains a horizontal line.

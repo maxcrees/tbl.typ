@@ -5,6 +5,9 @@ left|      | r
 l   |center|
     |     right
 .T&
+L      S     S   R.
+left         ||| right
+.T&
 Lz     S   | Rt
 Lt  |  Cb  | ^
 ^   |  Rz    S.
