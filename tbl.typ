@@ -1065,10 +1065,13 @@
             }
           }
           let diff = (cell.max - curr-width) / 1pt
-          if diff <= 0 {
+          if diff <= 0 or curr-width == 0pt {
             continue
           }
           for (col, width) in curr-widths.enumerate() {
+            if width == "equalize" {
+              continue
+            }
             col += begin
             width += diff * width / (curr-width) * 1pt
             cols.at(col) = width
