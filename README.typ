@@ -380,7 +380,7 @@ The following options are recognized:
 
 / *`mode`*:
 
-  - `"content"`: all table cells are evaluated as `[content blocks]`.
+  - `"markup"`: all table cells are evaluated as `[content blocks]`.
   - `"math"`: all table cells are evaluated as `$inline equations$`.
 
   _Default:_ `"content"` \
@@ -887,6 +887,13 @@ is the total number of columns in the table.
   not currently supported.
 
 = Version history
+- *Unreleased:* last updated Saturday 12 August 2023
+  - _Breaking changes_
+    - The `"content"` value for the #link-label(`mode`) region option
+      has been renamed to `"markup"` to align with the `eval` element
+      function in Typst 0.7.0. The former is now an undocumented alias
+      for the latter which *will be removed in the next release*.
+
 - *Version 0.0.3:* Saturday 29 July 2023
   - _Breaking changes_
     - The #link-label(`o(...)`) column modifier is now the cell

@@ -8,11 +8,6 @@
 // http://mozilla.org/MPL/2.0/.
 #import "@preview/tablex:0.0.4"
 
-#let CELL-MODES = (
-  content: ("[", "]"),
-  math: ("$", "$"),
-)
-
 #let OPTIONS-DEFAULT = (
   // troff tbl
   box: false,
@@ -29,7 +24,7 @@
   fg: auto,
   leading: 0.65em,
   macros: (:),
-  mode: "content",
+  mode: "markup",
   pad: (x: 0.75em, y: 3pt),
   size: 1em,
 
@@ -548,6 +543,8 @@
     }
   }
   if options.doublebox { options.box = true }
+  // TODO: remove in tbl v0.0.3+2
+  if options.mode == "content" { options.mode = "markup" }
 
   // Array of rows, each containing dictionaries ("column class" and
   // "column modifiers")
@@ -733,7 +730,6 @@
       let tbl-numeric = none
 
       cell = tbl-cell(spec, {
-        let (cell-open, cell-close) = CELL-MODES.at(options.mode)
         let align-pos = none
         let sep = []
         let sep-len = 0
@@ -797,8 +793,8 @@
             h(w)
           })
 
-          let cell-left = eval(cell-open + txt-left.trim() + cell-close)
-          let cell-right = eval(cell-open + txt-right.trim() + cell-close)
+          let cell-left = eval(txt-left.trim(), mode: options.mode)
+          let cell-right = eval(txt-right.trim(), mode: options.mode)
 
           // Spacing adjustments
           if txt-left.ends-with(regex-raw(`[^ \t][ \t]`)) {
@@ -814,7 +810,7 @@
           stack(dir: ltr, ..tbl-numeric)
 
         } else {
-          eval(cell-open + cell + cell-close)
+          eval(cell, mode: options.mode)
         }
       })
 
