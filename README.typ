@@ -506,24 +506,24 @@ The following column classifiers are recognized:
 / *`S`*: This cell is column-spanned by the previous cell to the left in
   the current row.
 
-  _The corresponding table data entries should be empty._ \
+  _The corresponding table data entries should be empty or elided._ \
   #emph[cf. @ex-food, @ex-bridges[], @ex-att[], @ex-rocks[], @ex-read[].]
 
 / *`^`* (caret): This cell is row-spanned by the corresponding cell in
   the previous row above.
 
-  _The corresponding table data entries should be empty._ \
+  _The corresponding table data entries should be empty or elided._ \
   #emph[cf. @ex-spans.]
 
 / *`_`* (underscore), \ `-` (hyphen): This cell contains a
   vertically-centered horizontal rule.
 
-  _The corresponding table data entries should be empty._
+  _The corresponding table data entries should be empty or elided._
 
 / *`=`* (equals sign): Same as #link-label(`_`), but draw a double
   horizontal rule instead.
 
-  _The corresponding table data entries should be empty._
+  _The corresponding table data entries should be empty or elided._
 
 / *`|`* (vertical bar): This classifier does not actually begin a new
   column, but rather indicates the location of a vertical line.
@@ -864,9 +864,6 @@ is the total number of columns in the table.
   consistent with #link(<inferred-columns>)[inferred column
   specifications] within a given set of format specifications.
 
-- An empty entry in the table data must be given even if the cell is
-  spanned or contains a horizontal line.
-
 #pagebreak(weak: true)
 = Known issues <issues>
 
@@ -906,6 +903,9 @@ is the total number of columns in the table.
     - As mentioned above, it is now possible to scope arbitrary Typst
       objects for use within table data entries using the
       #link-label(`scope`) region option (#issue(9)).
+    - For cells that are spanned or contain horizontal lines, an empty
+      table data entry is no longer required (but may still be
+      provided).
 
 - *Version 0.0.3:* Saturday 29 July 2023
   - _Breaking changes_

@@ -1,16 +1,18 @@
 Lz     S   | Rt
 Lt  |  Cb  | ^
 ^   |  Rz    S.
+.\" Data entry for spanned column
 left|      | r
 l   |center|
     |     right
 .T&
 L      S     S   R.
-left         ||| right
+left           | right
 .T&
 Lz     S   | Rt
 Lt  |  Cb  | ^
 ^   |  Rz    S.
-left|      | r
+.\" No data entry for spanned column
+left       | r
 l   |center|
     |     right

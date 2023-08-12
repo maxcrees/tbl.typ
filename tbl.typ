@@ -690,18 +690,19 @@
     rowdef = rowdef.at(calc.min(row - subtable-offset, specs.at(subtable).len() - 1))
     txt-row = txt-row.split(options.tab)
 
-    let missing = rowdef.len() - txt-row.len()
-    if missing > 0 {
-      // Add empty columns if fewer than expected are provided
-      txt-row += ("",) * missing
-    } else if missing < 0 {
-      panic("Too many columns")
-    }
+    assert-ctx(
+      rowdef.len() - txt-row.len() >= 0,
+      "Too many columns",
+      row: row,
+    )
 
     // This will hold each parsed cell
     let new-row = ()
+    let col = 0
+    let col-offset = 0
 
-    for (col, cell) in txt-row.enumerate() {
+    while col < rowdef.len() {
+      let cell = txt-row.at(col - col-offset, default: "")
       let txt-block = false
       if cell.trim() == "#tbl.txt-block" {
         txt-block = true
@@ -844,59 +845,16 @@
         })
       }
 
-      if spec.ignore {
-        // Preserve height, but ignore width.
-        cell = tbl-cell(spec, styles => {
-          box(
-            width: 0pt,
-            height: measure(cell, styles).height,
-            place(spec.halign + spec.valign, cell)
-          )
-        })
-      } else {
-        tbl-cell(spec, styles => {
-          let width = measure(cell, styles).width
-          let width-p = width + pt-length(spec.pad.left + spec.pad.right, styles)
-          if spec.colspan == 1 and cols.at(col) == "equalize" {
-              equalize-width.update(e => calc.max(e, width-p))
-          }
-          cell-widths.update(d => {
-            let (wcol, curr) = cell-width-at(d, col, spec: spec)
-            curr.max = calc.max(curr.max, width-p)
-
-            if tbl-numeric != none {
-              let (cell-left, _, cell-right) = tbl-numeric
-              cell-left = measure(cell-left, styles).width
-              cell-right = measure(cell-right, styles).width
-
-              curr.num-l = calc.max(curr.num-l, cell-left)
-              curr.num-r = calc.max(curr.num-r, cell-right)
-            } else if spec.class == "A" {
-              curr.alpha = calc.max(curr.alpha, width)
-            }
-
-            d.insert(wcol, curr)
-            d
-          })
-        })
-      }
-
       if spec.class == "S" {
-        assert-ctx(
-          empty,
-          "Non-empty cell when class is spanned column",
-          row: row,
-          col: col,
-        )
+        if not empty {
+          col-offset += 1
+        }
         cell = ()
 
       } else if spec.class == "^" or txt-cell == "\\^" {
-        assert-ctx(
-          txt-cell == "\\^" or empty,
-          "Non-empty cell when class is spanned row",
-          row: row,
-          col: col,
-        )
+        if not empty {
+          col-offset += 1
+        }
 
         // Find origin cell for this spanned one in current column
         let prev-row = -1
@@ -909,12 +867,9 @@
       } else if (spec.class in ("_", "-", "=")
             or txt-cell in ("_", "=", "\\_", "\\=")
       ) {
-        assert-ctx(
-          empty,
-          "Non-empty cell when class is horizontal rule",
-          row: row,
-          col: col,
-        )
+        if not empty {
+          col-offset += 1
+        }
 
         let line-start-x = 0%
         let line-length = 100%
@@ -953,6 +908,43 @@
         )
 
       } else if spec.class in ("L", "C", "R", "N", "A") {
+        if spec.ignore {
+          // Preserve height, but ignore width.
+          cell = tbl-cell(spec, styles => {
+            box(
+              width: 0pt,
+              height: measure(cell, styles).height,
+              place(spec.halign + spec.valign, cell)
+            )
+          })
+        } else {
+          tbl-cell(spec, styles => {
+            let width = measure(cell, styles).width
+            let width-p = width + pt-length(spec.pad.left + spec.pad.right, styles)
+            if spec.colspan == 1 and cols.at(col) == "equalize" {
+                equalize-width.update(e => calc.max(e, width-p))
+            }
+            cell-widths.update(d => {
+              let (wcol, curr) = cell-width-at(d, col, spec: spec)
+              curr.max = calc.max(curr.max, width-p)
+
+              if tbl-numeric != none {
+                let (cell-left, _, cell-right) = tbl-numeric
+                cell-left = measure(cell-left, styles).width
+                cell-right = measure(cell-right, styles).width
+
+                curr.num-l = calc.max(curr.num-l, cell-left)
+                curr.num-r = calc.max(curr.num-r, cell-right)
+              } else if spec.class == "A" {
+                curr.alpha = calc.max(curr.alpha, width)
+              }
+
+              d.insert(wcol, curr)
+              d
+            })
+          })
+        }
+
         cell = tablex.cellx(
           align: spec.halign + spec.valign,
           fill: spec.bg,
@@ -968,6 +960,7 @@
       }
 
       new-row.push(cell)
+      col += 1
     }
     rows.push((rowdef, new-row))
   }
