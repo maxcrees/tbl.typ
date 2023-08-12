@@ -902,6 +902,10 @@ is the total number of columns in the table.
       #link-label(`scope`) to reflect the expansion in its use. The
       former is now an undocumented alias for the latter which *will be
       removed in the next release*.
+  - _Improvements_
+    - As mentioned above, it is now possible to scope arbitrary Typst
+      objects for use within table data entries using the
+      #link-label(`scope`) region option (#issue(9)).
 
 - *Version 0.0.3:* Saturday 29 July 2023
   - _Breaking changes_
