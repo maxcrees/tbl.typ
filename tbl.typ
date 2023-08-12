@@ -23,7 +23,7 @@
   colors: (),
   fg: auto,
   leading: 0.65em,
-  macros: (:),
+  scope: (:),
   mode: "markup",
   pad: (x: 0.75em, y: 3pt),
   size: 1em,
@@ -42,6 +42,7 @@
   doubleframe: "doublebox",
   frame: "box",
   linesize: "stroke",
+  macros: "scope", // TODO: remove in tbl v0.0.3+2
   nokeep: "breakable",
 )
 
@@ -221,11 +222,11 @@
   }
 }
 
-#let tbl-color(colors, it) = {
+#let tbl-color(scope, colors, it) = {
   if it.match(regex-raw(`^[0-9]+$`)) != none {
     colors.at(int(it))
   } else {
-    eval(it)
+    eval(it, scope: scope)
   }
 }
 
@@ -423,6 +424,7 @@
 
         } else if mod == "k" {
           spec.bg = tbl-color(
+            options.scope,
             options.colors,
             args.k.remove(0),
           )
@@ -430,15 +432,16 @@
         } else if mod == "m" {
           arg = args.m.remove(0)
           assert-ctx(
-            arg in options.macros,
-            "Macro '" + arg + "' not given in region options",
+            arg in options.scope,
+            "Macro '" + arg + "' not in scope region option",
             row: row,
             col: col,
           )
-          spec.macro = options.macros.at(arg)
+          spec.macro = options.scope.at(arg)
 
         } else if mod == "o" {
           spec.fg = tbl-color(
+            options.scope,
             options.colors,
             args.o.remove(0),
           )
@@ -793,8 +796,16 @@
             h(w)
           })
 
-          let cell-left = eval(txt-left.trim(), mode: options.mode)
-          let cell-right = eval(txt-right.trim(), mode: options.mode)
+          let cell-left = eval(
+            txt-left.trim(),
+            mode: options.mode,
+            scope: options.scope,
+          )
+          let cell-right = eval(
+            txt-right.trim(),
+            mode: options.mode,
+            scope: options.scope,
+          )
 
           // Spacing adjustments
           if txt-left.ends-with(regex-raw(`[^ \t][ \t]`)) {
@@ -810,7 +821,11 @@
           stack(dir: ltr, ..tbl-numeric)
 
         } else {
-          eval(cell, mode: options.mode)
+          eval(
+            cell,
+            mode: options.mode,
+            scope: options.scope,
+          )
         }
       })
 

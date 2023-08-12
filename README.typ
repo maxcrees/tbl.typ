@@ -373,11 +373,6 @@ The following options are recognized:
 / *`leading`*: The vertical spacing / leading to apply to table cells.
   Can be overridden later by the #link-label(`v(...)`) column modifier.
 
-/ *`macros`*: A dictionary of (name, function) pairs that can be used
-  with column modifier #link-label(`m(...)`).
-
-  _Default:_ `(:)`
-
 / *`mode`*:
 
   - `"markup"`: all table cells are evaluated as `[content blocks]`.
@@ -399,6 +394,12 @@ The following options are recognized:
   page. This option is also controlled by `.TH` rows in the table data.
 
   _Default:_ `false`
+
+/ *`scope`*: A dictionary of (name, definition) pairs that can be used
+  with column modifiers #link-label(`k(...)`), #link-label(`m(...)`),
+  #link-label(`o(...)`), and within table data entries.
+
+  _Default:_ `(:)`
 
 / *`size`*: The font size for the table. Can be overridden later by the
   #link-label(`p(...)`) column modifier.
@@ -558,14 +559,16 @@ The following column modifiers are recognized:
   function.
 
 / *`k(...)`*: Bac#strong[k]ground for the cell is given in parentheses,
-  evaluated as Typst code. The default is controlled by the
-  #link-label(`bg`) region option. This can also be an integer
-  representing an index into the #link-label(`colors`) region option.
+  evaluated as Typst code (with a scope determined by the
+  #link-label(`scope`) region option). The argument can also be an
+  integer representing an index into the #link-label(`colors`) region
+  option. In any case, the default color is controlled by the
+  #link-label(`bg`) region option.
 
   #emph[cf. @ex-grade.]
 
 / *`m(...)`*: #strong[M]acro (function) to apply to each corresponding
-  cell. The macros must be scoped using the #link-label(`macros`) region
+  cell. The macros must be scoped using the #link-label(`scope`) region
   option.
 
   The macro currently only receives a single argument: the content of
@@ -573,9 +576,11 @@ The following column modifiers are recognized:
   terms of row number and column number.
 
 / *`o(...)`*: F#strong[o]reground color for the cell is given in
-  parentheses, evaluated as Typst code. The default is controlled by the
-  #link-label(`fg`) region option. This can also be an integer
-  representing an index into the #link-label(`colors`) region option.
+  parentheses, evaluated as Typst code (with a scope determined by the
+  #link-label(`scope`) region option). The argument can also be an
+  integer representing an index into the #link-label(`colors`) region
+  option.  In any case, the default color is controlled by the
+  #link-label(`fg`) region option.
 
   #emph[cf. @ex-grade.]
 
@@ -811,8 +816,8 @@ is the total number of columns in the table.
   - *#link(<options>)[Region options]:* #link-label(`align`),
     #link-label(`bg`), #link-label(`colors`), #link-label(`fg`),
     #link-label(`font`), #link-label(`header-rows`),
-    #link-label(`leading`), #link-label(`macros`), #link-label(`mode`),
-    #link-label(`pad`), #link-label(`size`),
+    #link-label(`leading`), #link-label(`mode`),
+    #link-label(`pad`), #link-label(`scope`), #link-label(`size`),
     #link-label(`repeat-header`)
   - *#link(<mods>)[Column modifiers]:* #link-label(`k(...)`),
     #link-label(`o(...)`)
@@ -893,6 +898,10 @@ is the total number of columns in the table.
       has been renamed to `"markup"` to align with the `eval` element
       function in Typst 0.7.0. The former is now an undocumented alias
       for the latter which *will be removed in the next release*.
+    - The `macros` region option has been renamed to
+      #link-label(`scope`) to reflect the expansion in its use. The
+      former is now an undocumented alias for the latter which *will be
+      removed in the next release*.
 
 - *Version 0.0.3:* Saturday 29 July 2023
   - _Breaking changes_
