@@ -594,14 +594,17 @@ The following column modifiers are recognized:
   The argument may be suffixed by a unit. If no unit is specified, `pt`
   is assumed. Valid units are:
 
-  - `pt`, `p`: points.
-  - `mm`: millimeters.
-  - `cm`, `c`: centimeters.
-  - `in`, `i`: inches.
-  - `em`, `m`: `1em` corresponds to the current font size.
-  - `en`, `n`: one _en_ equals half of an em.
-  - `P`: six _picas_ equals one inch.
-  - `M`: 100 of these equals one em.
+  #grid(columns: (1fr, 1fr))[
+    - `pt`, `p`: points.
+    - `mm`: millimeters.
+    - `cm`, `c`: centimeters.
+    - `in`, `i`: inches.
+  ][
+    - `em`, `m`: `1em` corresponds to the current font size.
+    - `en`, `n`: one _en_ equals half of an em.
+    - `P`: six _picas_ equals one inch.
+    - `M`: 100 of these equals one em.
+  ]
 
   #emph[cf. @ex-stack, @ex-rocks[], @ex-read[].]
 
@@ -890,7 +893,7 @@ is the total number of columns in the table.
   not currently supported.
 
 = Version history
-- *Unreleased:* last updated Saturday 12 August 2023
+- *Unreleased:* last updated Saturday 19 August 2023
   - _Breaking changes_
     - The `"content"` value for the #link-label(`mode`) region option
       has been renamed to `"markup"` to align with the `eval` element
@@ -912,6 +915,7 @@ is the total number of columns in the table.
       provided).
     - The dependency on `tablex` has been updated to 0.0.5.
 
+#pagebreak(weak: true)
 - *Version 0.0.3:* Saturday 29 July 2023
   - _Breaking changes_
     - The #link-label(`o(...)`) column modifier is now the cell
@@ -936,7 +940,6 @@ is the total number of columns in the table.
     - The behavior of whitespace with respect to
       #link(<special-line>)[special input lines] has been clarified.
 
-#pagebreak(weak: true)
 - *Version 0.0.2:* Saturday 10 June 2023
   - _Breaking changes_
     - Region option `tbl-align` has been renamed to
