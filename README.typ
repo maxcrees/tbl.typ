@@ -794,8 +794,9 @@ brace) is encountered. The rest of that input line can provide the
 remaining entries for that row of the table.
 
 // modifiers on spanned columns??
-If the cell is subject to the #link-label(`w(...)`) column modifier,
-then the text block is constrained to the specified width.
+If the cell is subject to the #link-label(`w(...)`) or
+#link-label(`x`) column modifiers, then the text block is constrained
+to the specified width.
 
 Otherwise, a constraining width $W$ is calculated according to the
 following formula:
@@ -878,7 +879,7 @@ is the total number of columns in the table.
 
   - `||` (double vertical line)
 
-- The #link-label(`x`) (e#strong[x]pand) column modifier does not
+- The #link-label(`e`) (#strong[e]qualize) column modifier does not
   currently constrain the width of text blocks like it should.
   (#issue(7))
 
@@ -899,6 +900,9 @@ is the total number of columns in the table.
       #link-label(`scope`) to reflect the expansion in its use. The
       former is now an undocumented alias for the latter which *will be
       removed in the next release*.
+  - _Bugs fixed_
+    - The #link-label(`x`) column modifier now overrides the width
+      calculation for text blocks. (#issue(7))
   - _Improvements_
     - As mentioned above, it is now possible to scope arbitrary Typst
       objects for use within table data entries using the

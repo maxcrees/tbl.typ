@@ -830,7 +830,7 @@
         }
       })
 
-      if txt-block {
+      if txt-block and cols.at(col) != 1fr {
         cell = locate(loc => {
           let (_, curr) = cell-width-at(cell-widths, col, loc: loc)
           if curr.min != 0pt {
