@@ -1,6 +1,6 @@
 [package]
 name = "tbl"
-version = "0.0.3"
+version = "0.0.4"
 entrypoint = "tbl.typ"
 authors = ["Max Rees"]
 license = "MPL-2.0"

@@ -220,7 +220,7 @@
     #set align(center)
     #set text(size: 1.2em)
     #link("https://maxre.es/tbl.typ/")[maxre.es/tbl.typ] \
-    Version 0.0.3 \
+    Version 0.0.4 \
     Max Rees \
     2023
   ]
@@ -256,7 +256,7 @@ features are unique to `tbl.typ` and are not easily reproduced in either
 + Add the following code to the top of your `.typ` file:
 
   ```
-  #import "@preview/tbl:0.0.3"
+  #import "@preview/tbl:0.0.4"
   #show: tbl.template
   ```
 
@@ -893,7 +893,7 @@ is the total number of columns in the table.
   not currently supported.
 
 = Version history
-- *Unreleased:* last updated Saturday 19 August 2023
+- *Version 0.0.4:* Saturday 19 August 2023
   - _Breaking changes_
     - The `"content"` value for the #link-label(`mode`) region option
       has been renamed to `"markup"` to align with the `eval` element
