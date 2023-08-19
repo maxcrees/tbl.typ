@@ -906,6 +906,7 @@ is the total number of columns in the table.
     - For cells that are spanned or contain horizontal lines, an empty
       table data entry is no longer required (but may still be
       provided).
+    - The dependency on `tablex` has been updated to 0.0.5.
 
 - *Version 0.0.3:* Saturday 29 July 2023
   - _Breaking changes_
