@@ -904,6 +904,7 @@ is the total number of columns in the table.
       former is now an undocumented alias for the latter which *will be
       removed in the next release*.
   - _Bugs fixed_
+    - A division-by-zero crash is now fixed.
     - The #link-label(`x`) column modifier now overrides the width
       calculation for text blocks. (#issue(7))
   - _Improvements_
