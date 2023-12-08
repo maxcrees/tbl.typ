@@ -4,6 +4,7 @@
 #set document(
   title: "tbl.typ: a tbl-like preprocessor for Typst and tablex",
   author: "Max Rees",
+  date: none,
 )
 
 #let current-heading = state("current-heading", none)
