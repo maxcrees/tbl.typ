@@ -6,7 +6,7 @@
 // Mozilla Public License, v. 2.0. If a copy of the MPL was
 // not distributed with this file, You can obtain one at
 // http://mozilla.org/MPL/2.0/.
-#import "@preview/tablex:0.0.6"
+#import "@preview/tablex:0.0.7"
 
 #let OPTIONS-DEFAULT = (
   // troff tbl
@@ -879,7 +879,7 @@
         }
 
         cell = tablex.cellx(
-          align: center + horizon,
+          align: left + horizon,
           fill: spec.bg,
           colspan: spec.colspan,
 
@@ -887,21 +887,25 @@
             if spec.class in ("_", "-") or txt-cell in ("_", "\\_") {
               // Horizontal rule
               line(
-                start: (line-start-x, 50%),
+                start: (line-start-x, 0%),
                 length: line-length,
                 stroke: options.stroke,
               )
             } else {
               // Double horizontal rule
-              line(
-                start: (line-start-x, 50% - 1pt),
-                length: line-length,
-                stroke: options.stroke,
-              )
-              line(
-                start: (line-start-x, 50% + 1pt),
-                length: line-length,
-                stroke: options.stroke,
+              stack(
+                dir: ttb,
+                line(
+                  start: (line-start-x, 0%),
+                  length: line-length,
+                  stroke: options.stroke,
+                ),
+                2pt,
+                line(
+                  start: (line-start-x, 0%),
+                  length: line-length,
+                  stroke: options.stroke,
+                ),
               )
             }
           }
