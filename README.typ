@@ -379,7 +379,7 @@ The following options are recognized:
   - `"markup"`: all table cells are evaluated as `[content blocks]`.
   - `"math"`: all table cells are evaluated as `$inline equations$`.
 
-  _Default:_ `"content"` \
+  _Default:_ `"markup"` \
   #emph[cf. @ex-butcher.]
 
 / *`pad`*: This is the padding used for each cell, for use with the
@@ -894,6 +894,15 @@ is the total number of columns in the table.
   not currently supported.
 
 = Version history
+- *Unreleased:* last updated Wednesday 20 December 2023
+  - _Breaking changes_
+    - The `"content"` value for the #link-label(`mode`) region
+      option, an alias for the value of `"markup"` deprecated
+      since version 0.0.4, has been removed.
+    - The `macros` alias for the #link-label(`scope`) region
+      option, deprecated since version 0.0.4, has been removed.
+  - _Improvements_
+    - The dependency on `tablex` has been updated to 0.0.7.
 - *Version 0.0.4:* Saturday 19 August 2023
   - _Breaking changes_
     - The `"content"` value for the #link-label(`mode`) region option
@@ -908,6 +917,7 @@ is the total number of columns in the table.
     - A division-by-zero crash is now fixed.
     - The #link-label(`x`) column modifier now overrides the width
       calculation for text blocks. (#issue(7))
+  #colbreak()
   - _Improvements_
     - As mentioned above, it is now possible to scope arbitrary Typst
       objects for use within table data entries using the
@@ -917,7 +927,6 @@ is the total number of columns in the table.
       provided).
     - The dependency on `tablex` has been updated to 0.0.5.
 
-#pagebreak(weak: true)
 - *Version 0.0.3:* Saturday 29 July 2023
   - _Breaking changes_
     - The #link-label(`o(...)`) column modifier is now the cell
