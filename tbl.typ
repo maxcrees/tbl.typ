@@ -42,7 +42,6 @@
   doubleframe: "doublebox",
   frame: "box",
   linesize: "stroke",
-  macros: "scope", // TODO: remove in tbl v0.0.3+2
   nokeep: "breakable",
 )
 
@@ -546,8 +545,6 @@
     }
   }
   if options.doublebox { options.box = true }
-  // TODO: remove in tbl v0.0.3+2
-  if options.mode == "content" { options.mode = "markup" }
 
   // Array of rows, each containing dictionaries ("column class" and
   // "column modifiers")
