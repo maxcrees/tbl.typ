@@ -887,9 +887,6 @@ is the total number of columns in the table.
   currently constrain the width of text blocks like it should.
   (#issue(7))
 
-- Within text blocks, `.\"` comments are not removed, and other #troff
-  commands are not rejected. (#issue(6))
-
 - A table data row consisting of only `=` (double horizontal line) is
   not currently supported.
 
@@ -903,6 +900,9 @@ is the total number of columns in the table.
       option, deprecated since version 0.0.4, has been removed.
   - _Improvements_
     - The dependency on `tablex` has been updated to 0.0.7.
+    - Within text blocks, `.\"` comments are now removed, and other
+      #troff commands are rejected. (#issue(6))
+
 - *Version 0.0.4:* Saturday 19 August 2023
   - _Breaking changes_
     - The `"content"` value for the #link-label(`mode`) region option

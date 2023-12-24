@@ -703,7 +703,20 @@
       let txt-block = false
       if cell.trim() == "#tbl.txt-block" {
         txt-block = true
-        cell = txt-blocks.remove(0)
+        cell = txt-blocks.remove(0).split("\n").filter(it => {
+          if it.starts-with(".\\\"") {
+            false
+          } else if it.starts-with(".") {
+            assert-ctx(
+              false,
+              "Unsupported command: `" + it + "'",
+              row: row,
+              col: col,
+            )
+          } else {
+            true
+          }
+        }).join("\n")
       } else if cell.trim().starts-with("#tbl.txt-block") {
         assert-ctx(
           false,
