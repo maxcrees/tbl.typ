@@ -891,7 +891,7 @@ is the total number of columns in the table.
   not currently supported.
 
 = Version history
-- *Unreleased:* last updated Wednesday 20 December 2023
+- *Unreleased:* last updated Saturday 13 January 2024
   - _Breaking changes_
     - The `"content"` value for the #link-label(`mode`) region
       option, an alias for the value of `"markup"` deprecated
@@ -899,7 +899,7 @@ is the total number of columns in the table.
     - The `macros` alias for the #link-label(`scope`) region
       option, deprecated since version 0.0.4, has been removed.
   - _Improvements_
-    - The dependency on `tablex` has been updated to 0.0.7.
+    - The dependency on `tablex` has been updated to 0.0.8.
     - Within text blocks, `.\"` comments are now removed, and other
       #troff commands are rejected. (#issue(6))
 
