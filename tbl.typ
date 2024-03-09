@@ -522,10 +522,10 @@
   for (name, value) in options.pairs() {
     if name in OPTIONS-ALIAS {
       let mapping = OPTIONS-ALIAS.at(name)
-      if type(mapping) == "dictionary" {
+      if type(mapping) == dictionary {
         options += mapping
         let _ = options.remove(name)
-      } else if type(mapping) == "string" {
+      } else if type(mapping) == str {
         options.insert(mapping, value)
         let _ = options.remove(name)
       } else {
