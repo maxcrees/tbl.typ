@@ -6,7 +6,6 @@
 // Mozilla Public License, v. 2.0. If a copy of the MPL was
 // not distributed with this file, You can obtain one at
 // http://mozilla.org/MPL/2.0/.
-#import "@preview/tablex:0.0.8"
 
 #let OPTIONS-DEFAULT = (
   // troff tbl
@@ -187,9 +186,15 @@
   }})
 }
 
-#let tbl-cell(spec, it) = {
-  if type(it) == "function" {
-    tbl-cell(spec, style(styles => it(styles)))
+#let tbl-cell(body, ..options) = {
+  let options = options.named()
+  options.rowspan = options.remove("rowspan", default: 1)
+  (body: body, ..options)
+}
+
+#let tbl-cell-ctx(spec, it) = {
+  if type(it) == function {
+    tbl-cell-ctx(spec, style(styles => it(styles)))
 
   } else {
     set text(
@@ -220,6 +225,8 @@
     it
   }
 }
+
+#let tbl-vline(..options) = options.named()
 
 #let tbl-color(scope, colors, it) = {
   if it.match(regex-raw(`^[0-9]+$`)) != none {
@@ -283,7 +290,7 @@
   txt-specs = txt-specs.split(regex-raw(`[,\n]+`)).enumerate()
   for (row, txt-row) in txt-specs {
     let vline-end = if row == txt-specs.len() - 1 {
-      auto
+      none
     } else {
       row + 1
     }
@@ -323,7 +330,7 @@
           row: row,
           col: col-line,
         )
-        new-vlines.push(tablex.vlinex(
+        new-vlines.push(tbl-vline(
           start: row,
           end: vline-end,
           x: col,
@@ -478,7 +485,7 @@
       }
 
       if min-width-given != none {
-        realize += tbl-cell(spec, styles => {
+        realize += tbl-cell-ctx(spec, styles => {
           cell-widths.update(d => {
             // w(...) does not care about spans
             let (wcol, curr) = cell-width-at(d, col)
@@ -561,11 +568,12 @@
   // "cell-widths" below.
   let cols = ()
 
-  // Manually specified vertical and horizontal lines. These are
-  // arrays of tablex.vlinex and tablex.hlinex. The latter also keeps
-  // track of how many lines of input in the txt-data have been
-  // ignored so that we can still properly map each table row into the
-  // correct entry in "specs" above.
+  // Manually specified vertical and horizontal lines. These are arrays
+  // of tbl-vline and table.hline. The latter also helps keeps track of
+  // how many lines of input in the txt-data have been ignored so that
+  // we can still properly map each table row into the correct entry in
+  // "specs" above. tbl-vline will be realized into table.vline right
+  // before the table is laid out.
   let vlines = ()
   let hlines = ()
 
@@ -636,13 +644,14 @@
 
   let subtable = -1
   let subtable-offset = 0
+  let other-offset = 0
   for (row, txt-row) in txt-data.split("\n").enumerate() {
-    row -= hlines.len()
+    row -= hlines.len() + other-offset
 
     // Skippable data entries:
     if txt-row == "_" {
       // Horizontal rule
-      hlines.push(tablex.hlinex(
+      hlines.push(table.hline(
         y: row,
         stroke: options.stroke,
       ))
@@ -656,28 +665,27 @@
       // End-of-header
       options.repeat-header = true
       options.header-rows = row
-      hlines.push(()) // A bit of a hack, but this keeps row numbering
-                      // correct later.
+      other-offset += 1
       continue
 
     } else if txt-row == "#tbl.next" {
       vlines.at(subtable) = vlines.at(subtable).map(vline => {
-        if vline.end == auto and subtable > -1 { vline.end = row }
+        if vline.end == none and subtable > -1 { vline.end = row }
         vline
       })
       subtable += 1
       subtable-offset = row
       vlines.at(subtable) = vlines.at(subtable).map(vline => {
         vline.start += subtable-offset
-        if vline.end != auto { vline.end += subtable-offset }
+        if vline.end != none { vline.end += subtable-offset }
         vline
       })
-      hlines.push(())
+      other-offset += 1
       continue
 
     } else if txt-row.starts-with(".\\\"") {
       // Comment
-      hlines.push(())
+      other-offset += 1
       continue
     } else if txt-row.starts-with(".") {
       panic("Unsupported command: `" + txt-row + "'")
@@ -743,7 +751,7 @@
       let spec = rowdef.at(col)
       let tbl-numeric = none
 
-      cell = tbl-cell(spec, {
+      cell = tbl-cell-ctx(spec, {
         let align-pos = none
         let sep = []
         let sep-len = 0
@@ -801,11 +809,11 @@
 
           // Hacky as it gets... but necessary to preserve some
           // spacing across the decimalpoint.
-          let sp = style(styles => {
-            let w = measure("x  .", styles).width
-            w -= measure("x.", styles).width
+          let sp = context {
+            let w = measure("x  .").width
+            w -= measure("x.").width
             h(w)
-          })
+          }
 
           let cell-left = eval(
             txt-left.trim(),
@@ -820,12 +828,12 @@
 
           // Spacing adjustments
           if txt-left.ends-with(regex-raw(`[^ \t][ \t]`)) {
-            cell-left = cell-left + sp
+            cell-left = cell-left + sp + box[]
           }
           if txt-right.trim() == "" {
             sep = hide(options.decimalpoint)
           } else if txt-right.starts-with(regex-raw(`[ \t][^ \t]`)) {
-            cell-right = sp + cell-right
+            cell-right = box[] + sp + cell-right
           }
 
           tbl-numeric = (cell-left, sep, cell-right)
@@ -888,7 +896,7 @@
           line-length -= spec.pad.left + spec.pad.right
         }
 
-        cell = tablex.cellx(
+        cell = tbl-cell(
           align: left + horizon,
           fill: spec.bg,
           colspan: spec.colspan,
@@ -924,7 +932,7 @@
       } else if spec.class in ("L", "C", "R", "N", "A") {
         if spec.ignore {
           // Preserve height, but ignore width.
-          cell = tbl-cell(spec, styles => {
+          cell = tbl-cell-ctx(spec, styles => {
             box(
               width: 0pt,
               height: measure(cell, styles).height,
@@ -932,7 +940,7 @@
             )
           })
         } else {
-          tbl-cell(spec, styles => {
+          tbl-cell-ctx(spec, styles => {
             let width = measure(cell, styles).width
             let width-p = width + pt-length(spec.pad.left + spec.pad.right, styles)
             if spec.colspan == 1 and cols.at(col) == "equalize" {
@@ -959,7 +967,7 @@
           })
         }
 
-        cell = tablex.cellx(
+        cell = tbl-cell(
           align: spec.halign + spec.valign,
           fill: spec.bg,
           colspan: spec.colspan,
@@ -985,13 +993,13 @@
 
   if options.box and not options.auto-lines {
     hlines += (
-      tablex.hlinex(y: 0),
-      tablex.hlinex(y: rows.len()),
+      table.hline(y: 0),
+      table.hline(y: rows.len()),
     )
 
     vlines += (
-      tablex.vlinex(x: 0),
-      tablex.vlinex(x: cols.len()),
+      tbl-vline(x: 0),
+      tbl-vline(x: cols.len()),
     )
   }
 
@@ -1016,15 +1024,16 @@
           let (row, cells) = row
           let (rowdef, cells) = cells
 
-          cells.enumerate().map(cell => {
+          cells.filter(cell => cell != ()).enumerate().map(cell => {
             let (col, cell) = cell
             let spec = rowdef.at(col)
             let (_, curr) = cell-width-at(cell-widths, col, spec: spec)
+            let tbl-numeric = cell.remove("tbl-numeric", default: none)
 
-            if type(cell) == "dictionary" and "tbl-numeric" in cell {
+            if tbl-numeric != none {
               // Align smaller class "N" cells in this column
-              cell.content = tbl-cell(spec, {
-                let (cell-left, sep, cell-right) = cell.tbl-numeric
+              cell.body = tbl-cell-ctx(spec, {
+                let (cell-left, sep, cell-right) = tbl-numeric
 
                 pad(
                   ..spec.pad,
@@ -1036,17 +1045,18 @@
                   )
                 )
               })
-            } else if type(cell) == "dictionary" and spec.class == "A" {
+            } else if spec.class == "A" {
               // Align smaller class "A" cells in this column
-              cell.content = tbl-cell(spec, {
+              cell.body = tbl-cell-ctx(spec, {
                 pad(
                   ..spec.pad,
-                  box(width: curr.alpha, align(left, cell.content)),
+                  box(width: curr.alpha, align(left, cell.body)),
                 )
               })
             }
 
-            cell
+            let body = cell.remove("body")
+            table.cell(body, ..cell)
           })
         })
 
@@ -1106,13 +1116,12 @@
           }
         })
 
-        tablex.tablex(
+        let vlines = vlines.map(vline => table.vline(..vline))
+
+        table(
           columns: cols,
-          auto-lines: options.auto-lines,
-          header-rows: options.header-rows,
           inset: 0pt,
-          repeat-header: options.repeat-header,
-          stroke: options.stroke,
+          stroke: if options.auto-lines { options.stroke } else { none },
 
           ..vlines,
           ..hlines,
