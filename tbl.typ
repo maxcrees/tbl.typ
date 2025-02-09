@@ -174,12 +174,6 @@
   }
 }
 
-// Convert any mix of em / other (absolute) lengths to pt.
-// https://github.com/typst/typst/issues/1231
-#let pt-length(len, styles) = {
-  measure(line(length: len), styles).width
-}
-
 #let regex-raw(..patterns) = {
   regex({for pattern in patterns.pos() {
       pattern.text
@@ -193,36 +187,38 @@
 }
 
 #let tbl-cell-ctx(spec, it) = {
-  if type(it) == function {
-    tbl-cell-ctx(spec, style(styles => it(styles)))
+  set text(
+    baseline:
+      if spec.stagger { -1em }
+      else { 0em },
+    font: spec.font,
+    size: spec.size,
+    number-width:
+      if spec.class == "N" { "tabular" }
+      else { auto },
+  )
+  set par(leading: spec.leading)
 
-  } else {
-    set text(
-      baseline:
-        if spec.stagger { -1em }
-        else { 0em },
-      font: spec.font,
-      size: spec.size,
-      number-width:
-        if spec.class == "N" { "tabular" }
-        else { auto },
-    )
-    set par(leading: spec.leading)
+  let funcs = ()
+  if spec.macro != none {
+    funcs.push(spec.macro)
+  }
+  if spec.bold {
+    funcs.push(strong)
+  }
+  if spec.italic {
+    funcs.push(emph)
+  }
+  if spec.fg != auto {
+    funcs.push(it => text(fill: spec.fg, it))
+  }
 
-    if spec.macro != none {
-      it = (spec.macro)(it)
+  context {
+    let it = it()
+    for func in funcs {
+      it = (func)(it)
     }
-    if spec.bold {
-      it = strong(it)
-    }
-    if spec.italic {
-      it = emph(it)
-    }
-    if spec.fg != auto {
-      it = text(fill: spec.fg, it)
-    }
-
-    it
+    return it
   }
 }
 
@@ -485,12 +481,13 @@
       }
 
       if min-width-given != none {
-        realize += tbl-cell-ctx(spec, styles => {
+        realize += tbl-cell-ctx(spec, () => {
+          let width = min-width-given.to-absolute()
+          let width-p = width + (spec.pad.left + spec.pad.right).to-absolute()
+
           cell-widths.update(d => {
             // w(...) does not care about spans
-            let (wcol, curr) = cell-width-at(d, col)
-            let width = pt-length(min-width-given, styles)
-            let width-p = width + pt-length(spec.pad.left + spec.pad.right, styles)
+            let (wcol, curr) = cell-width-at(d, col, spec: spec)
             curr.min = calc.max(curr.min, width)
             curr.max = calc.max(curr.max, width-p)
             d.insert(wcol, curr)
@@ -749,9 +746,8 @@
       }
 
       let spec = rowdef.at(col)
-      let tbl-numeric = none
 
-      cell = tbl-cell-ctx(spec, {
+      cell = tbl-cell-ctx(spec, () => {
         let align-pos = none
         let sep = []
         let sep-len = 0
@@ -836,8 +832,24 @@
             cell-right = box[] + sp + cell-right
           }
 
-          tbl-numeric = (cell-left, sep, cell-right)
-          stack(dir: ltr, ..tbl-numeric)
+          let cell-left-width = measure(cell-left).width
+          let cell-right-width = measure(cell-right).width
+          cell-widths.update(d => {
+            let (wcol, curr) = cell-width-at(d, col, spec: spec)
+
+            curr.num-l = calc.max(curr.num-l, cell-left-width)
+            curr.num-r = calc.max(curr.num-r, cell-right-width)
+
+            d.insert(wcol, curr)
+            d
+          })
+          let (_, curr) = cell-width-at(cell-widths.final(), col, spec: spec)
+          stack(
+            dir: ltr,
+            box(width: curr.num-l, align(right, cell-left)),
+            sep,
+            box(width: curr.num-r, align(left, cell-right)),
+          )
 
         } else {
           eval(
@@ -849,8 +861,9 @@
       })
 
       if txt-block and cols.at(col) != 1fr {
-        cell = locate(loc => {
-          let (_, curr) = cell-width-at(cell-widths, col, loc: loc)
+        cell = context {
+          let (_, curr) = cell-width-at(cell-widths.get(), col, spec:
+          spec)
           if curr.min != 0pt {
             box(width: curr.min, cell)
           } else {
@@ -860,7 +873,7 @@
 
             box(width: width, cell)
           }
-        })
+        }
       }
 
       if spec.class == "S" {
@@ -932,32 +945,26 @@
       } else if spec.class in ("L", "C", "R", "N", "A") {
         if spec.ignore {
           // Preserve height, but ignore width.
-          cell = tbl-cell-ctx(spec, styles => {
+          cell = tbl-cell-ctx(spec, () => {
             box(
               width: 0pt,
-              height: measure(cell, styles).height,
+              height: measure(cell).height,
               place(spec.halign + spec.valign, cell)
             )
           })
         } else {
-          tbl-cell-ctx(spec, styles => {
-            let width = measure(cell, styles).width
-            let width-p = width + pt-length(spec.pad.left + spec.pad.right, styles)
+          tbl-cell-ctx(spec, () => {
+            let width = measure(cell).width
+            let width-p = width + (spec.pad.left + spec.pad.right).to-absolute()
             if spec.colspan == 1 and cols.at(col) == "equalize" {
                 equalize-width.update(e => calc.max(e, width-p))
             }
+
             cell-widths.update(d => {
               let (wcol, curr) = cell-width-at(d, col, spec: spec)
               curr.max = calc.max(curr.max, width-p)
 
-              if tbl-numeric != none {
-                let (cell-left, _, cell-right) = tbl-numeric
-                cell-left = measure(cell-left, styles).width
-                cell-right = measure(cell-right, styles).width
-
-                curr.num-l = calc.max(curr.num-l, cell-left)
-                curr.num-r = calc.max(curr.num-r, cell-right)
-              } else if spec.class == "A" {
+              if spec.class == "A" {
                 curr.alpha = calc.max(curr.alpha, width)
               }
 
@@ -975,10 +982,6 @@
           if spec.class == "A" { cell }
           else { pad(..spec.pad, cell) },
         )
-
-        if tbl-numeric != none {
-          cell.tbl-numeric = tbl-numeric
-        }
       }
 
       new-row.push(cell)
@@ -1017,9 +1020,9 @@
         else { none },
 
       /********************* WIDTH REALIZATION *********************/
-      locate(loc => {
-        let equalize-width = equalize-width.at(loc)
-        let cell-widths = cell-widths.at(loc)
+      context {
+        let equalize-width = equalize-width.get()
+        let cell-widths = cell-widths.get()
         let rows = rows.enumerate().map(row => {
           let (row, cells) = row
           let (rowdef, cells) = cells
@@ -1028,26 +1031,9 @@
             let (col, cell) = cell
             let spec = rowdef.at(col)
             let (_, curr) = cell-width-at(cell-widths, col, spec: spec)
-            let tbl-numeric = cell.remove("tbl-numeric", default: none)
-
-            if tbl-numeric != none {
-              // Align smaller class "N" cells in this column
-              cell.body = tbl-cell-ctx(spec, {
-                let (cell-left, sep, cell-right) = tbl-numeric
-
-                pad(
-                  ..spec.pad,
-                  stack(
-                    dir: ltr,
-                    box(width: curr.num-l, align(right, cell-left)),
-                    sep,
-                    box(width: curr.num-r, align(left, cell-right)),
-                  )
-                )
-              })
-            } else if spec.class == "A" {
+            if spec.class == "A" {
               // Align smaller class "A" cells in this column
-              cell.body = tbl-cell-ctx(spec, {
+              cell.body = tbl-cell-ctx(spec, () => {
                 pad(
                   ..spec.pad,
                   box(width: curr.alpha, align(left, cell.body)),
@@ -1117,6 +1103,8 @@
         })
 
         let vlines = vlines.map(vline => table.vline(..vline))
+        //let header = rows.slice(0, count: options.header-rows)
+        //rows = rows.slice(1)
 
         table(
           columns: cols,
@@ -1125,9 +1113,10 @@
 
           ..vlines,
           ..hlines,
+          //table.header(..header.flatten(), repeat: options.repeat-header),
           ..rows.flatten(),
         )
-      })
+      }
     )
   )
 })
