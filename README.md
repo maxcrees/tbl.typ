@@ -1,11 +1,8 @@
 # `tbl.typ`
-This is a library for [Typst](https://typst.app/) built upon Pg Biel's fabulous
-[`tablex`](https://github.com/PgBiel/typst-tablex) library.
-
-It allows the creation of complex tables in Typst using a compact syntax based
-on the `tbl` preprocessor for the traditional UNIX TROFF typesetting system.
-There are also some novel features that are not currently offered by Typst
-itself or `tablex`, namely:
+This [Typst](https://typst.app/) library facilitates the creation of complex
+tables in Typst using a compact syntax based on the `tbl` preprocessor for the
+traditional UNIX TROFF typesetting system. There are also some novel features
+that are not currently offered by Typst itself, namely:
 
 - Decimal point alignment (using the `decimalpoint` region option and
   `N`-classified columns)
