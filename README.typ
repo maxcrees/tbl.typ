@@ -11,9 +11,9 @@
 #set page(
   paper: "us-letter",
   margin: (top: 0.75in, rest: 0.5in),
-  header: locate(loc => {
-    let my-page-num = counter(page).at(loc).first()
-    let my-heading = current-heading.at(loc)
+  header: context {
+    let my-page-num = counter(page).get().first()
+    let my-heading = current-heading.get()
     let my-line = none
     if my-heading == none {
       my-heading = []
@@ -30,7 +30,7 @@
       )
       my-line
     }
-  })
+  }
 )
 
 #let font = "New Computer Modern"
@@ -73,8 +73,8 @@
   )
 }
 
-#show terms: it => style(styles => {
-  let width = calc.max(..it.children.map(t => measure(t.term, styles).width))
+#show terms: it => context {
+  let width = calc.max(..it.children.map(t => measure(t.term).width))
 
   for item in it.children {
     block(
@@ -98,7 +98,7 @@
               the-label = the-label.trim("]", at: end, repeat: false)
               the-label = label(the-label)
             }
-            [#it#the-label]
+            [#v(-1em)#figure[]#the-label#it]
           }
           item.term
         }),
@@ -107,7 +107,7 @@
       ),
     )
   }
-})
+}
 
 #let TK = strong(text(fill: red)[TK])
 #let troff = smallcaps[troff]
@@ -115,8 +115,9 @@
   "https://github.com/maxcrees/tbl.typ/issues/" + str(num),
   [GH-#num],
 )
-#let link-label(target, ..text) = {
-  text = text.pos()
+#let link-label(target, ..text) = context {
+  let text = text.pos()
+  let target = target
   if text.len() == 0 {
     text = none
   } else if text.len() == 1 {
@@ -124,12 +125,13 @@
   } else {
     panic("Too many texts")
   }
-  if type(target) == "content" and target.func() == raw {
+  if type(target) == content and target.func() == raw {
     if text == none {
       text = target
     }
     target = target.text
   }
+  if type(target) != str { panic(target) }
   link(label(target), text)
 }
 
@@ -228,7 +230,7 @@
 
   v(1fr)
   pagebreak(weak: true)
-  outline(indent: true)
+  outline(indent: auto)
 }
 
 #pagebreak(weak: true)
