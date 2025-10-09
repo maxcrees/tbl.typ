@@ -2,7 +2,7 @@
 #import "tbl.typ"
 
 #set document(
-  title: "tbl.typ: a tbl-like preprocessor for Typst and tablex",
+  title: "tbl.typ: a tbl-like preprocessor for Typst",
   author: "Max Rees",
   date: none,
 )
@@ -216,16 +216,16 @@
     #set align(center)
     #set text(size: 2em)
     `tbl.typ`: a `tbl`-like preprocessor \
-    for Typst and `tablex`
+    for Typst
   ]
 
   [
     #set align(center)
     #set text(size: 1.2em)
     #link("https://maxre.es/tbl.typ/")[maxre.es/tbl.typ] \
-    Version 0.0.4 \
+    Version 0.1.0 \
     Max Rees \
-    2023
+    2025
   ]
 
   v(1fr)
@@ -237,11 +237,7 @@
 = Introduction <intro>
 Typst @Typst is "a new markup-based typesetting system that is powerful
 and easy to learn." While Typst provides a built-in `table()` function,
-it does not currently support more advanced features such as row spans
-and column spans, fine-grain control of borders, or complex cell
-alignments. Pg Biel's `tablex` project @tablex.typ provides many of
-these features. However, it remains the case that writing a table using
-either `table()` or `tablex()` can require rather verbose syntax.
+it can require rather verbose syntax.
 
 The `tbl.typ` project is an effort to allow the expression of rich
 tables in Typst using a more terse syntax. This syntax comes from a
@@ -251,8 +247,8 @@ Important differences between the syntax of traditional `tbl` and
 `tbl.typ` are noted #link(<diff>)[later in this document]. The goal of
 this project is to support many traditional `tbl` features in a sensible
 manner (i.e. not pixel-for-pixel or bug compatible). Some of these
-features are unique to `tbl.typ` and are not easily reproduced in either
-`table()` or `tablex()` alone.
+features are unique to `tbl.typ` and are not easily reproduced by the
+`table()` function alone.
 
 = Usage <usage>
 + Make sure you are using Typst version 0.6.0.
@@ -312,8 +308,7 @@ The following options are recognized:
   _Default:_ `left`
 
 / *`auto-lines`*, \ `allbox`: Like #link-label(`box`), but also draw a
-  line between every cell if `true`. This is the same option from
-  `tablex`.
+  line between every cell if `true`.
 
   _Default:_ `false` \
   #emph[cf. @ex-att, @ex-rocks[], @ex-lines[], @ex-grade[].]
@@ -893,7 +888,7 @@ is the total number of columns in the table.
   not currently supported.
 
 = Version history
-- *Unreleased:* last updated Saturday 13 January 2024
+- *Unreleased:* last updated Thursday 09 October 2025
   - _Breaking changes_
     - The `"content"` value for the #link-label(`mode`) region
       option, an alias for the value of `"markup"` deprecated
@@ -901,7 +896,7 @@ is the total number of columns in the table.
     - The `macros` alias for the #link-label(`scope`) region
       option, deprecated since version 0.0.4, has been removed.
   - _Improvements_
-    - The dependency on `tablex` has been updated to 0.0.8.
+    - There is no longer a dependency on `tablex`.
     - Within text blocks, `.\"` comments are now removed, and other
       #troff commands are rejected. (#issue(6))
 
