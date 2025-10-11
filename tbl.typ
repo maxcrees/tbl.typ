@@ -27,7 +27,7 @@
   pad: (x: 0.75em, y: 3pt),
   size: 1em,
 
-  // tablex.typ (FIXME)
+  // tablex
   auto-lines: false,
   header-rows: 1,
   repeat-header: false,
@@ -527,9 +527,7 @@
   return (col-widths, realize, specs, vlines)
 }
 
-#let tbl(txt, ..options) = layout(size => {
-  let txt = txt.replace("\r", "")
-
+#let tbl-options(..options) = {
   ////////////////////// TABLE OPTION PARSING //////////////////////
   let options = options.named()
   for (name, value) in OPTIONS-DEFAULT.pairs() {
@@ -570,6 +568,14 @@
     }
   }
   if options.doublebox { options.box = true }
+  options
+}
+
+#let tbl(txt, ..options) = layout(size => {
+  let txt = txt.replace("\r", "")
+
+  // Region options
+  let options = tbl-options(..options)
 
   // Array of dictionaries representing each row ("column class" and
   // "column modifiers")
@@ -602,6 +608,7 @@
   // if there is no container.
   let tbl-max-width = size.width
 
+  // Parse format specifications
   let found-spec = txt.match(regex-raw(`(?ms)(?:\A|^\.T&\n)(.*?)\.[ \t]*\n`))
   while found-spec != none {
     let ret = tbl-spec(
@@ -622,6 +629,8 @@
   }
   let txt-data = txt
 
+  // Add missing specifications based on maximum number of columns
+  // encountered
   specs = specs.map(subtable => subtable.map(
     rowdef => {
       let missing = col-widths.len() - rowdef.len()
@@ -680,7 +689,8 @@
       other-offset += 1
       continue
 
-    } else if txt-row == "#tbl.next" { // .T&
+    } else if txt-row == "#tbl.next" {
+      // .T& (new "subtable" / format specifications)
       vlines.at(subtable) = vlines.at(subtable).map(vline => {
         if vline.end == none and subtable > -1 { vline.end = row }
         vline
@@ -721,6 +731,7 @@
     while col < rowdef.len() {
       let cell = txt-row.at(col - col-offset, default: "")
       let txt-block = false
+      // Reinsert text blocks that were previously removed
       if cell.trim() == "#tbl.txt-block" {
         txt-block = true
         cell = txt-blocks.remove(0).split("\n").filter(it => {
@@ -752,6 +763,7 @@
       let empty = cell == ""
       cell = cell.replace("\\&", "")
 
+      // \Rx character repetition cell fill
       let rep = cell.match(regex-raw(`^\\R(.)$`))
       if rep != none {
         rep = rep.captures.first()
@@ -766,6 +778,7 @@
       let sep = []
       let sep-len = 0
 
+      // Find alignment point for numerically-aligned cells
       if (spec.class == "N"
           and cell != "" // Do nothing if special entry
           and not txt-block
@@ -831,12 +844,14 @@
       }
 
       if spec.class == "S" {
+        // Horizontal span
         if not empty {
           col-offset += 1
         }
         cell = ()
 
       } else if spec.class == "^" or txt-cell == "\\^" {
+        // Vertical span
         if not empty {
           col-offset += 1
         }
@@ -852,6 +867,7 @@
       } else if (spec.class in ("_", "-", "=")
             or txt-cell in ("_", "=", "\\_", "\\=")
       ) {
+        // Line
         if not empty {
           col-offset += 1
         }
@@ -902,6 +918,7 @@
         )
 
       } else if spec.class in ("L", "C", "R", "N", "A") {
+        // Normal cell
         if spec.ignore {
           // Preserve height, but ignore width.
           cell = tbl-cell-ctx(spec, () => {
@@ -981,6 +998,8 @@
         //   column # may be "j,n" in which case it applies to column j
         //   iff colspan == n
         let sub-widths = (:)
+        // Column modifier "e"(qualize) width
+        let equalize-width = 0pt
 
         for (col, cells) in cols.enumerate() {
           for cell in cells {
@@ -993,12 +1012,13 @@
               } else {
                 0pt
               }
-            let width-min = cell.tbl-spec.min-width.to-absolute()
 
-            widths.min = calc.max(widths.min, width-min)
+            // Minimum width for each column
+            widths.min = calc.max(widths.min, cell.tbl-spec.min-width.to-absolute())
 
             let width-cell = measure(cell.body).width + padding-cell
 
+            // Maximum width for each column
             let width-max = 0pt
             if cell.tbl-txt-block and col-widths.at(col) != 1fr {
               width-max = widths.min
@@ -1013,6 +1033,7 @@
             }
             widths.max = calc.max(widths.min + padding-cell, widths.max, width-max)
 
+            // Maximum numeric left/right width for each column
             if cell.at("tbl-n", default: none) != none {
               let child = cell.at("body", default: none)
               while child != none and child.func() != stack {
@@ -1026,27 +1047,22 @@
               }
             }
 
+            // Maximum alphabetic width for each column
             if cell.tbl-spec.class == "A" {
               widths.alpha = calc.max(widths.alpha, measure(cell.body).width)
+            }
+
+            // Column modifier "e"(qualize)
+            if cell.colspan == 1 and col-widths.at(col) == "equalize" {
+              equalize-width = calc.max(equalize-width, widths.max)
             }
 
             sub-widths.insert(wcol, widths)
           }
         }
 
-        let equalize-width = 0pt
-        for (col, cells) in cols.enumerate() {
-          for cell in cells {
-            if cell == () or cell.tbl-spec.ignore {
-              continue
-            }
-            let widths = sub-width-at(sub-widths, col, cell.tbl-spec)
-            if cell.colspan == 1 and col-widths.at(col) == "equalize" {
-              equalize-width = calc.max(equalize-width, widths.max)
-            }
-          }
-        }
-
+        // Now that all widths are known, apply them to each cell as
+        // necessary
         let rows = rows.enumerate().map(((row, cells)) => {
           cells.filter(cell => cell != ()).enumerate().map(cell => {
             let (col, cell) = cell
@@ -1057,6 +1073,7 @@
             let tbl-pad = cell.remove("tbl-pad")
             let tbl-txt-block = cell.remove("tbl-txt-block")
 
+            // Text block width
             if tbl-txt-block and col-widths.at(col) != 1fr {
               body = {
                 let width = sub-width-at(sub-widths, col, spec).min
@@ -1071,16 +1088,18 @@
             }
 
             if spec.class == "N" and tbl-n != none {
+              // Numeric column width alignment
               let width = sub-width-at(sub-widths, col, spec).num
               body = tbl-cell-numeric(options, spec, ..tbl-n, width: width)
             } else if spec.class == "A" {
-              // Align smaller class "A" cells in this column
+              // Alphabetic column width alignment
               let width = sub-width-at(sub-widths, col, spec).alpha
               body = tbl-cell-ctx(spec, () => {
                 box(width: width, align(left, body))
               })
             }
 
+            // Column separation
             if spec.class in ("L", "C", "R", "N", "A") and tbl-pad {
               body = pad(..spec.pad, body)
             }
@@ -1145,8 +1164,8 @@
         })
 
         let vlines = vlines.map(vline => table.vline(..vline))
-        //let header = rows.slice(0, count: options.header-rows)
-        //rows = rows.slice(1)
+        let header = rows.slice(0, count: options.header-rows)
+        rows = rows.slice(options.header-rows)
 
         table(
           columns: col-widths,
@@ -1155,7 +1174,7 @@
 
           ..vlines,
           ..hlines,
-          //table.header(..header.flatten(), repeat: options.repeat-header),
+          table.header(..header.flatten(), repeat: options.repeat-header),
           ..rows.flatten(),
         )
       }
