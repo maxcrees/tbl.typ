@@ -1,11 +1,12 @@
 #import "../../tbl.typ": tbl
-#import "options.typ": options
 
 #set page(
   width: 8.5in,
   height: auto,
   margin: (x: 0.5in, y: 0.1in),
 )
+
+#import "options.typ": options
 
 #tbl(
   font: "New Computer Modern",
