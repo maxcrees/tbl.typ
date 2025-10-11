@@ -36,7 +36,7 @@ update:
 		../driver.typ.in > '$*.typ'; \
 	if [ -e post.typ ]; then \
 		cat post.typ >> '$*.typ'; \
-	fi
+	fi; \
 	mv -f '$@' '$@.old' 2>/dev/null || :; \
 	if ! $(TYPST) compile '$*.typ' '$@'; then \
 		rm -f '$@' '$@.new'; \
