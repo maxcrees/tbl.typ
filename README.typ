@@ -43,6 +43,7 @@
 #set par(leading: 0.5em, justify: true)
 
 #show link: set text(fill: blue)
+#set list(marker: sym.bullet)
 
 #show raw.where(block: false): it => {
   box(
@@ -153,14 +154,15 @@
   breakable: false,
 
   {
-    set par(justify: false)
+    set par(justify: false, spacing: 0.6em)
     set text(hyphenate: auto, overhang: false)
     {
+      set align(left)
       set text(font: font)
       if it.caption in (none, [], "") {
         strong[#it.supplement #it.counter.display()]
       } else [
-        #strong[#it.supplement #it.counter.display():] #it.caption
+        #strong[#it.supplement #it.counter.display():] #it.caption.body
       ]
     }
     box(
@@ -241,21 +243,21 @@ it can require rather verbose syntax.
 
 The `tbl.typ` project is an effort to allow the expression of rich
 tables in Typst using a more terse syntax. This syntax comes from a
-#smallcaps[unix] heritage: the `tbl` preprocessor which designed for use
-with the traditional #troff typesetting system @tbl.1 @tbl.7 @Cherry.
-Important differences between the syntax of traditional `tbl` and
-`tbl.typ` are noted #link(<diff>)[later in this document]. The goal of
-this project is to support many traditional `tbl` features in a sensible
-manner (i.e. not pixel-for-pixel or bug compatible). Some of these
-features are unique to `tbl.typ` and are not easily reproduced by the
-`table()` function alone.
+#smallcaps[unix] heritage: the `tbl` preprocessor which was designed for
+use with the traditional #troff typesetting system @tbl.1 @tbl.7
+@Cherry.  Important differences between the syntax of traditional `tbl`
+and `tbl.typ` are noted #link(<diff>)[later in this document]. The goal
+of this project is to support many traditional `tbl` features in a
+sensible manner (i.e. not pixel-for-pixel or bug compatible). Some of
+these features are unique to `tbl.typ` and are not easily reproduced by
+the `table()` function alone.
 
 = Usage <usage>
-+ Make sure you are using Typst version 0.6.0.
++ Make sure you are using Typst version 0.13.1 or later.
 + Add the following code to the top of your `.typ` file:
 
   ```
-  #import "@preview/tbl:0.0.4"
+  #import "@preview/tbl:0.1.0"
   #show: tbl.template
   ```
 
@@ -438,6 +440,7 @@ The last row definition in the format specifications determines the
 layout of that row and all subsequent rows until the next
 #link-label(`.T&`) command or the end of the table if there is none.
 
+#pagebreak(weak: true)
 Spaces and tabs between any column classifiers or column modifiers are
 ignored. Column classifier letters and column modifier letters can be
 given as either uppercase (preferred for column classifiers) or
@@ -888,17 +891,23 @@ is the total number of columns in the table.
   not currently supported.
 
 = Version history
-- *Unreleased:* last updated Thursday 09 October 2025
+- *Version 0.1.0:* Saturday 11 October 2025
   - _Breaking changes_
     - The `"content"` value for the #link-label(`mode`) region
       option, an alias for the value of `"markup"` deprecated
       since version 0.0.4, has been removed.
     - The `macros` alias for the #link-label(`scope`) region
       option, deprecated since version 0.0.4, has been removed.
+    - The minimum supported Typst compiler version is now 0.13.1.
   - _Improvements_
-    - There is no longer a dependency on `tablex`.
+    - There is no longer a dependency on the `tablex` package or the
+      `#state()` function. This should improve compilation speed and
+      stability.
     - Within text blocks, `.\"` comments are now removed, and other
       #troff commands are rejected. (#issue(6))
+  - _Bugs fixed_
+    - Citations within tables will no longer prevent the document layout
+      from converging. (#issue(11))
 
 - *Version 0.0.4:* Saturday 19 August 2023
   - _Breaking changes_
@@ -914,7 +923,6 @@ is the total number of columns in the table.
     - A division-by-zero crash is now fixed.
     - The #link-label(`x`) column modifier now overrides the width
       calculation for text blocks. (#issue(7))
-  #colbreak()
   - _Improvements_
     - As mentioned above, it is now possible to scope arbitrary Typst
       objects for use within table data entries using the
@@ -997,7 +1005,6 @@ is the total number of columns in the table.
 
   block(breakable: false)[
     *The following examples are formatted with these region options:*
-
     #raw(
       block: true,
       lang: none,
