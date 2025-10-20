@@ -3,6 +3,7 @@ C    C      C
 N    N      N.
 AT&T Common Stock
 Year|Price |Dividend
+.TH
 1984|15-20 |\$1.20
    5|19-25 |1.20
    6|21-28 |1.20

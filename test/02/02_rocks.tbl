@@ -3,6 +3,7 @@ C           Cw(1in)         Cw(1in)
 Ltp(9)      Ltp(9)          Ltp(9).
 New York Area Rocks
 Era        |Formation      |Age (years)
+.TH
 Precambrian|Reading Prong  |>1 billion
 Paleozoic  |Manhattan Prong|400 million
 Mesozoic   |T{

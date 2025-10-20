@@ -11,6 +11,7 @@ Food           |Percent by Weight
 \^             |Protein|Fat|Carbo-
 \^             |\^     |\^ |hydrate
 _
+.TH
 Apples         |  .4   | .5|13.0
 Halibut        |18.4   |5.2|...
 Lima beans     | 7.5   | .8|22.0

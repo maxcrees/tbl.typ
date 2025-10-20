@@ -366,7 +366,8 @@ The following options are recognized:
 / *`header-rows`*: The number of rows at the beginning of the table to
   consider part of the "header" for the purposes of
   #link-label(`repeat-header`). This option is also controlled by
-  #link-label(`.TH`) rows in the table data.
+  #link-label(`.TH`) rows in the table data. Header rows are wrapped in
+  Typst's `table.header()` function.
 
   _Default:_ `1`
 
@@ -695,6 +696,9 @@ input lines.
   #link-label(`breakable`) is also `true` and the table spans multiple
   pages.
 
+  #emph[cf. @ex-food, @ex-bridges[], @ex-att[], @ex-rocks[],
+  @ex-read[].]
+
 - A line consisting of only `.T&` #label(`.T&`.text) (period + capital T
   \+ ampersand) begins a new section of #link(<specs>)[format
   specifications] that is terminated by a trailing period.
@@ -714,6 +718,7 @@ input lines.
   first cell in a row begin with a period, use a Typst escape (e.g.
   `\.`).
 
+  #colbreak()
 - Lines that end with `\` <line-continue> (backslash) indicate that the
   table entry for the current cell continues on the next input line.
 
@@ -766,6 +771,7 @@ If a table entry consists of any of the following strings alone
 
     #emph[cf. @ex-lines.]
 
+    #colbreak()
   - *`=`* (equals sign): Like `_` above, but draw a double horizontal
     line.
 
