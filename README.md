@@ -17,7 +17,7 @@ Many other features exist to condense common configurations to a concise syntax.
 For example:
 
 ````
-#import "@preview/tbl:0.1.0"
+#import "@preview/tbl:0.1.1"
 #show: tbl.template.with(box: true, tab: "|")
 
 ```tbl

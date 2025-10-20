@@ -225,7 +225,7 @@
     #set align(center)
     #set text(size: 1.2em)
     #link("https://maxre.es/tbl.typ/")[maxre.es/tbl.typ] \
-    Version 0.1.0 \
+    Version 0.1.1 \
     Max Rees \
     2025
   ]
@@ -257,7 +257,7 @@ the `table()` function alone.
 + Add the following code to the top of your `.typ` file:
 
   ```
-  #import "@preview/tbl:0.1.0"
+  #import "@preview/tbl:0.1.1"
   #show: tbl.template
   ```
 
@@ -897,6 +897,15 @@ is the total number of columns in the table.
   not currently supported.
 
 = Version history
+- *Version 0.1.1:* Sunday 19 October 2025
+  - _Bugs fixed_
+    - Rows that span upwards into header rows will now themselves become
+      part of the header, too. By default, only first row (and now any
+      rows that span into it) is considered the table header. This can
+      be overridden by using the special input line #link-label(`.TH`)
+      or specifying the #link-label(`header-rows`) region option. This
+      fixes compatibility with Typst 0.14.0.
+
 - *Version 0.1.0:* Saturday 11 October 2025
   - _Breaking changes_
     - The `"content"` value for the #link-label(`mode`) region
@@ -914,7 +923,7 @@ is the total number of columns in the table.
   - _Bugs fixed_
     - Citations within tables will no longer prevent the document layout
       from converging. (#issue(11))
-
+    #colbreak()
 - *Version 0.0.4:* Saturday 19 August 2023
   - _Breaking changes_
     - The `"content"` value for the #link-label(`mode`) region option
@@ -961,7 +970,7 @@ is the total number of columns in the table.
   - _Documentation_
     - The behavior of whitespace with respect to
       #link(<special-line>)[special input lines] has been clarified.
-
+    #colbreak()
 - *Version 0.0.2:* Saturday 10 June 2023
   - _Breaking changes_
     - Region option `tbl-align` has been renamed to
