@@ -861,6 +861,9 @@
         while rows.at(prev-row).at(col) == () {
           prev-row -= 1
         }
+        if rows.len() + prev-row < options.header-rows {
+          options.header-rows = row + 1
+        }
         rows.at(prev-row).at(col).rowspan += 1
         cell = ()
 
